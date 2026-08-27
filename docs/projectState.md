@@ -6,7 +6,7 @@
 **Remote:** `origin` → `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`
 **Host:** **GitHub Pages.** See *Hosting* below.
 **Last CODE commit:** `2080723` — "Footer links and devCredit fix" (author arxnalley). **34 files, +702 / −542** — the 33 pages plus `css/styleIndex.css`, carrying the footer legal-row restructure. Committed and pushed by Aron.
-**Closeout commit:** this session's docs-only commit, **local and unpushed**. HEAD is that commit or the small `docs:` commit recording its hash immediately after — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
+**Closeout commit:** `d6f36cc` — "Session closeout: footer legal row, favicon decision, Apps Script deployed" (2026-08-27). **Docs only, local, unpushed.** HEAD is the small `docs:` commit recording this hash immediately after it — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
 **Sync:** `main` was **level with `origin/main`** before this closeout commit — verified with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
 **Working tree:** **clean apart from two untracked logo files** — `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept deliberately as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`. No tracked file is modified or deleted.
 
