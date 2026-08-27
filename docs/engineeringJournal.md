@@ -4,6 +4,176 @@ Append-only. Newest entry at the top.
 
 ---
 
+## 2026-08-27 — THE FOOTER LEGAL ROW, THE FAVICON DECISION, AND TWO TOOLCHAIN LESSONS
+
+**Committed by Aron as `2080723` "Footer links and devCredit fix"** — 34 files,
++702 / −542: the 33 pages plus `css/styleIndex.css`. Pushed.
+
+**The Google-side work is finished**, reported by Aron and recorded as his
+report because none of it is checkable from here: both `config` tab emails
+confirmed as the real BlueGrid Gmail account, `config.gs` and `validation.gs`
+pasted into Apps Script, and the existing deployment updated with **New
+version** — the path that preserves the `/exec` URL all 33 forms post to. The
+repository and production now run the same backend code for the first time
+since 2026-08-15.
+
+---
+
+### 1. The footer legal row — a grid track that could not give ground
+
+**The report:** at narrower desktop and tablet widths the legal links were
+eating the footer and pushing the Nulo developer credit toward, and eventually
+past, the right edge.
+
+**The mechanism, measured rather than guessed.** `.footerBottomInner` was a
+three-zone grid, `1fr auto 1fr`: copyright left, legal links centre, credit
+right. The two `1fr` tracks are equal *regardless of their content*, which is
+exactly why that grid was chosen — it is the only way to centre the middle zone
+against two outer blocks of different widths. But it also means the centre
+track can only grow by taking from both outer tracks equally, and the credit is
+the wider of the two, so it is the one that visibly suffers. Driven in real
+Chrome at 1024px:
+
+| | before | after |
+|---|---|---|
+| legal row width | 603.7px in the centre track | 976px, its own row |
+| `.devCredit` | **162.2px, compressed** | 176.1px, its natural width |
+| `.footerCopyright` | **3 lines** (66.5px tall) | 1 line (22.2px) |
+
+**The fix is structural, not cosmetic.** The nav moved out of
+`.footerBottomInner` into `.footerLegalBar`, a row of its own placed
+immediately *before* `.footerBottomBar` — which is the element carrying the
+`border-top` that *is* the divider. Below the divider only two zones remain, on
+`1fr auto`: the `auto` track sizes to the credit and nothing else, so the
+credit is flush right and cannot be squeezed by the copyright beside it.
+
+**The nav was moved, not rebuilt.** Same element, same `aria-label`, same four
+hrefs at whatever depth each page uses (`privacy/`, `../privacy/`, and
+`/privacy/` on `404.html`), same `data-animate` attributes, same consent
+button. Only its indentation changed, by one level. The script planned all 33
+pages first and refused to write unless every plan was clean — a half-applied
+chrome edit across 33 files is worse than no edit — and guarded href identity,
+visible-text identity, DOM order, and the file's own line-ending counts.
+
+**Wrapping was measured across 14 widths, not assumed.** One line down to
+700px, two to 430px, three at 390px and below, and **no wrapped line ever
+begins with a separator**, which would read as a stray dot. That last property
+is now asserted rather than hoped for.
+
+**A new suite, `validateFooterLegalRow`**, drives 40 page/viewport combinations
+in real Chrome — 5 page shapes across the 8 widths the brief named. It asserts
+the row paints above the divider *measured against the divider's real painted
+position*, that `.footerBottomInner` holds exactly the copyright and the credit
+in that order, that nothing in the footer paints past either viewport edge,
+that the two zones do not overlap, that the credit's logo actually decoded,
+that every control is hit-testable, and that Cookie Settings still reopens the
+consent banner. **Injection-proven:** pushing the row below the divider and the
+credit past the right edge produced 95 failures naming exactly those two
+defects.
+
+**Two traps worth recording.** First, the consent banner is pinned to the
+bottom of the viewport on a first visit and covers the bottom of the footer, so
+hit-testing reported every control as dead when a real visitor can click all of
+them; the suite now answers the banner before measuring. Second, the site has
+**pre-existing horizontal overflow of 8 to 10px** on the homepage from
+unrevealed `[data-animate]` transforms — harmless, invisible, since `html` is
+`overflow-x: hidden` — but it means a global scrollWidth-versus-clientWidth
+assertion fails for reasons that have nothing to do with the footer. The
+overflow check is scoped to the footer subtree on purpose.
+
+---
+
+### 2. The favicon question, settled on measurement
+
+A second favicon package was generated from the circular BLUEGRID wordmark logo
+and put beside the deployed one. The audit answered a specific worry — that the
+new mark looked too small or too padded in tabs and Google results — and the
+answer turned out to be neither.
+
+**Neither package has any transparent padding.** Both are a disc inscribed
+edge to edge: opaque area 78.5% of canvas, which is pi/4, the signature of a
+circle in a square; content bounding box the full canvas; margin to the canvas
+edge 0px, at every size in both packages. The apparent padding is *internal
+layout* — the wordmark lockup occupies 19.9% of the icon's height — plus what
+Google's SERP container and Android's maskable crop add downstream.
+
+**The real failure is feature scale.** Median stroke width in each 512 master,
+projected to real render sizes:
+
+| Feature | at 512 | at 16px | canvas needed for a 2px stroke |
+|---|---|---|---|
+| Mountain/tree, main trees | 95px | **2.97px** | **11px** |
+| Wordmark, BLUEGRID | 20px | 0.63px | 51px |
+| Wordmark, LAND SOLUTIONS | 5px | **0.16px** | **205px** |
+
+A 0.16px stroke cannot be drawn; it becomes a 16% grey tint of one pixel row.
+Detail survival — downscale, restore, RMSE against the master — is 2.3x worse
+for the wordmark at every size: **it loses more at 96px than the tree mark
+loses at 16px**. Contrast does not rescue it. The wordmark's ink is 18.78:1
+against its disc while the tree mark's white-on-sky is only 1.92:1, and the
+tree mark wins anyway, because shapes at 3px beat contrast at sub-pixel.
+
+**It also fails the maskable safe zone.** The wordmark spans 96.1% of the
+canvas width; Android's safe zone is a circle of 80% diameter. Under the crop
+that `site.webmanifest` invites with a maskable purpose, BLUEGRID is clipped at
+both ends. The tree mark's finest detail sits at x 158 to 434 of 512 and
+degrades gracefully.
+
+**A mixed strategy was offered and declined.** The wordmark was measurably
+better in exactly one place — Apple Touch and the manifest icons at 180 to
+512px, where it is fully legible and reads as a genuine app icon. Aron chose
+one artwork everywhere. Recorded in `technicalDebt.md` item 39 with the
+numbers, so this does not get re-litigated from memory.
+
+**Restoring, not copying.** Every referenced favicon had been deleted from the
+working tree during the comparison, so a local serve rendered none. They were
+restored with a checkout from HEAD, which returns the **exact deployed bytes
+that have already passed `validateFavicons`** — the `oldFavicons` package was a
+re-encode with identical pixels but different bytes, and copying it would have
+churned the repo for no visual change.
+
+**One file in that package was not a re-encode at all.** Its
+`apple-touch-icon.png` was a bleed-to-edge transparent circle, RMSE **0.464**
+against the deployed file, having lost the opaque 10%-margin treatment the
+deployed icon carries: 100% opaque, 18px inset, 144x144 ink box. Copying the
+folder wholesale would have regressed iOS the same way the 2026-08-19 incident
+regressed browser tabs. The comparison folders were then deleted — 14 files,
+1,290 KB, zero references, never tracked.
+
+`graphics/logos/masterFavicon_BG.png` is the rejected wordmark master, kept
+deliberately as an alternate *logo* concept to show Chase. It is not an
+approved favicon.
+
+---
+
+### 3. Two toolchain lessons, both predicted by item 10i
+
+**The transit failure happened again, and differently.** The scratchpad was
+carried forward by copying the `.js` files only, which left `fonts/` behind.
+`validateHeader`, `validateInsightsSection` and `validateMegaMenus` all died on
+a missing `inter600.extracted.ttf`. Nothing was wrong with the site. The
+previous incident was a *lost suite*; this one was a lost *dependency*, which
+is quieter — the suites were present and simply could not run. **Copy the whole
+directory.**
+
+**A validator drifted out of sync with the code it guards.**
+`validateAnalytics` asserted the footer's three-zone grid, `1fr auto 1fr`, and
+a DOM order of copyright then legal then credit — precisely the architecture
+this session replaced. It was rewritten to assert the new contract rather than
+relaxed or worked around, because a validator that has stopped describing the
+code is worse than no validator. This is item 10i's second failure mode, and it
+was caught only because the suite failed loudly.
+
+**A line-endings correction.** `docs/technicalDebt.md` is **LF**, while
+`projectState.md` and `engineeringJournal.md` are **CRLF**. A first scripted
+edit asserted CRLF and aborted before writing, which is the guard working as
+intended. The check that produced the wrong belief was a `grep -c` for a
+carriage return, which matched every line rather than every CR — **verify a
+line-ending claim by counting bytes, not by grepping.** `projectState.md`'s
+line-endings table covers source files but not docs.
+
+---
+
 ## 2026-08-21 — THE BACKLOG SHIPPED, AND WHAT WENT INTO IT
 
 **Committed and pushed by Aron as `90f10ec` "Complete"** — 85 files,

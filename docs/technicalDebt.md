@@ -1,6 +1,12 @@
 # Technical Debt — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-21 (session closeout — performance audit + fixes, browser QA + fixes, dev credit logo)
+**Last updated:** 2026-08-27 (session closeout — footer legal row, favicon decision and restore, Apps Script deployment confirmed)
+
+**Resolved 2026-08-27:** the standing P0 (Sheet `notificationEmail` and `photoViewerEmail` both confirmed as the real BlueGrid account) and the repo/production Apps Script gap (`config.gs` and `validation.gs` pasted, deployment updated with New version). Both reported by Aron; neither is verifiable from this repository.
+
+**Sharpened 2026-08-27:** item 10i (a second transit failure, this time a lost *dependency* rather than a lost suite, plus a validator that drifted out of sync with the code it guards), item 13 (the intro video is coming, and arrives rotated 180 degrees).
+
+**Decided 2026-08-27:** item 39 — the **original mountain/tree favicon artwork is approved for every favicon context**. A second package built on the circular BLUEGRID wordmark logo was measured against it and rejected. The deployed set was restored from `HEAD` and the two comparison folders removed.
 
 **Resolved 2026-08-21:** items 41 (`favicon.svg` — resolved by unlinking it, artwork untouched), 45 (after hero plate priority), 46 (hero entrance LCP gate), 47 (consent privacy link on deep 404s), 48 (footer social tap target).
 
@@ -85,6 +91,8 @@ Chase's own advertising does list "TREE & BRUSH CLEANUP" as a service tile, so t
 ### 4. ~~Nothing has ever been checked in a real browser~~ — **LARGELY ADDRESSED 2026-08-20. Read what is still true.**
 
 **A real browser has been part of the toolchain since 2026-08-18** (`browserSession.js`, Chrome over CDP), and on 2026-08-20 a representative QA pass covered **8 pages x 7 viewports = 56 combinations**, plus 18 breakpoint widths and a functional pass over the mega menus, mobile drawer, estimate modal and its five-step progression, address prefill, FAQ accordion, consent controls, process board, hero typing and sweep, and 404 recovery. Result: zero horizontal scroll, zero broken images, zero console errors, CLS 0-0.0075, all three documented breakpoints flipping where they should.
+
+**Added 2026-08-27:** the footer bottom bar has now been driven in real Chrome at 1440/1024/820/768/600/430/390/375 across 5 page shapes — 40 combinations — by `validateFooterLegalRow`. That covers geometry, wrapping, hit-testing and the consent round trip. It does **not** cover whether the two-row footer *looks* right to a human, which is still an item-4 question. Also measured and worth knowing: the homepage carries **8 to 10px of pre-existing horizontal overflow** from unrevealed `[data-animate]` transforms. It is invisible because `html` is `overflow-x: hidden`, and it is not a footer defect, but it means a naive global overflow assertion will fail on this site for reasons unrelated to whatever is being tested.
 
 **What is STILL true, and is the part that matters:**
 
@@ -218,7 +226,16 @@ Checked properly — every rendered title on all eight boards, uppercased as `te
 ### 10h. ~~The Git remote URL is stale~~ — RESOLVED, confirmed at 2026-08-13 closeout
 `origin` now points at `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`, verified via `git remote -v`. No session recorded here ran the fix, and `origin/main` was also found to have moved ahead by a push this repository's history doesn't show — both point to activity happening outside these sessions, which is fine, just worth knowing the working tree isn't the only place this project changes.
 
-### 10i. The validator toolchain lives outside the repository — **AND IT HAS NOW LOST A SUITE IN TRANSIT**
+### 10i. The validator toolchain lives outside the repository — **IT HAS NOW FAILED IN TRANSIT TWICE, IN TWO DIFFERENT WAYS**
+
+**Twenty-eight scratchpad suites as of 2026-08-27** — 26 `validate*` and 2 `simulate*`, plus the Apps Script harness in the repo, which the runner enumerates from the directory rather than trusting a written number. `validateFooterLegalRow` is the one added this session. **The counting in this file and in `projectState.md` had drifted**: "28 validator suites + harness = 29/29" was recorded on 2026-08-21 against a directory holding 27 suites, so the harness was being counted twice. Count with `ls`, not from notes.
+
+**SECOND TRANSIT FAILURE, 2026-08-27 — a lost dependency, which is quieter than a lost suite.** The toolchain was carried forward by copying `*.js` only. `fonts/` was left behind, and `validateHeader`, `validateInsightsSection` and `validateMegaMenus` all died on a missing `inter600.extracted.ttf`. Nothing was wrong with the site. Unlike the 2026-08-21 incident the suites were *present* — they simply could not run, and a hurried reader could have mistaken three stack traces for three real defects. **Copy the whole scratchpad directory**, not the scripts: the suites also need `fonts/`, `favaudit/`, `imgtest/` and `syntaxCheck/`.
+
+**AND THE OTHER FAILURE MODE FIRED TOO: a validator drifted out of sync with the code it guards.** `validateAnalytics` asserted the footer's three-zone grid (`1fr auto 1fr`, DOM order copyright then legal then credit) — precisely the architecture the 2026-08-27 footer work replaced. It was rewritten to assert the new contract rather than relaxed or bypassed. Same lesson as `validateFollowTheWork` in 2026-08-21, and again it was caught only because the suite failed loudly rather than because anyone remembered to check.
+
+Original analysis below.
+
 **Twenty-eight suites as of 2026-08-21** — the 26 previously listed plus `validateConsentPrivacyLink` and `validateFooterSocialTarget`, both written 2026-08-21 to guard the two browser-QA defects (items 47 and 48). Plus two supporting modules that five of them will not run without: **`browserSession.js`** (drives the installed Chrome over CDP with no dependencies) and **`serveSite.js`** (serves the repo the way GitHub Pages does, including the no-redirect 404). `validate404Page`, `validateResponsiveImages`, `validateHeroEstimateUx`, `validateFavicons` and `validateProcessLayout` are useless without both.
 
 **The predicted failure has now actually happened.** `validateFollowTheWork.js` did not survive the hand-off into the hardening session's scratchpad and had to be recovered from an *older* scratchpad — found only because a count was checked against a written list. Had nobody counted, the suite would simply have ceased to exist with no error anywhere. This is no longer a hypothetical risk in this item; it is a recorded incident.
@@ -266,8 +283,14 @@ Measured with `curl -I`: **`https://www.bluegridlandsolutions.com/` returns 301 
 
 The canonicals were pointing at the **redirecting** host. All 29 canonicals, all 29 `og:url` values, the 29 sitemap URLs and the `robots.txt` sitemap line were normalized to the apex. `validateAnalytics` now fails on any `https://www.` reappearing in a canonical, `og:url`, sitemap or robots line.
 
-### 13. Chase owner introduction video missing
-The section is built, video-ready, and ships a polished placeholder. Supplying it is a two-field config change — `introVideoUrl` + `introVideoConfigured` — with YouTube, Vimeo, and self-hosted all supported. No code debt; purely awaiting the asset.
+### 13. Chase owner introduction video — **THE FILE IS COMING, AND IT ARRIVES UPSIDE DOWN**
+Chase has recorded an intro and is emailing the original. **It is rotated 180 degrees and must be corrected before anything else is done with it** — do not optimise, poster, or publish an unrotated file.
+
+The section itself carries no code debt. `<section id="meetTheOwner">` holds `#introMediaSlot`, and `initializeIntroVideo()` in `js/indexJS.js` injects a player over it from three config fields — `introVideoUrl`, `introVideoConfigured`, `introVideoPoster` — supporting YouTube, Vimeo and self-hosted files in `graphics/videos/` (currently empty). **No markup change is required**; if a future session finds itself editing `index.html` for this, it has missed the injector.
+
+`introVideoPoster` currently points at `graphics/images/excavator2_PiketonOH.webp`. A frame from the video is usually the better poster once one exists.
+
+**A higher-quality recording is expected later**, once better equipment is available. Keep the swap a config change so replacing the source costs one line. The full sequence is in `projectState.md` under *NEXT SESSION SHOULD START HERE*.
 
 ### 14. Facebook embed disabled
 `facebookPageConfigured: false`, so a designed fallback panel shows instead of the live Page Plugin. The real page URL is already in config. Needs someone to confirm the page renders in the plugin, then flip the flag.
@@ -598,7 +621,23 @@ With the SVG icon link removed (item 41), no page references an SVG icon, so the
 
 They now scan for a declaration at the **start of a line**. Worth remembering generally: a validator that parses CSS by substring will eventually be defeated by a comment that documents the thing it is looking for.
 
-### 39. Favicon system — **AUDITED 2026-08-19. THE ARTWORK IS APPROVED AND MUST NOT BE RECOMPOSED.**
+### 39. Favicon system — **AUDITED 2026-08-19, RE-AUDITED AND DECIDED 2026-08-27. THE MOUNTAIN/TREE ARTWORK IS APPROVED FOR EVERY CONTEXT AND MUST NOT BE RECOMPOSED.**
+
+**DECISION, 2026-08-27 — the mountain/tree mark is the favicon everywhere.** A second package generated from the circular BLUEGRID wordmark logo was audited against the deployed one and rejected. **Neither package had transparent padding** — both are a disc inscribed edge to edge: opaque area 78.5% of canvas (π/4), content bounding box the full canvas, margin to the canvas edge 0px. The wordmark package fails on *feature scale*, not padding:
+
+| Feature | stroke @512 | at 16px | canvas needed for a 2px stroke |
+|---|---|---|---|
+| Mountain/tree — main trees | 95px | **2.97px** | **11px** |
+| Wordmark — `BLUEGRID` | 20px | 0.63px | 51px |
+| Wordmark — `LAND SOLUTIONS` | 5px | **0.16px** | **205px** |
+
+The wordmark lockup occupies 19.9% of the icon's height, so a 16px render gives it 3.19px of vertical space and gives `BLUEGRID` alone 2.03px. Detail survival (downscale, restore, RMSE against the master) is **2.3× worse at every size** — the wordmark loses more at 96px than the tree mark loses at 16px. The wordmark also spans 96.1% of the canvas width, which puts it **outside the Android maskable safe zone**: under the 80% crop that `site.webmanifest` invites with `purpose: "any maskable"`, `BLUEGRID` is clipped at both ends. The tree mark's finest detail sits at x 158–434 of 512 and degrades gracefully.
+
+The wordmark was measurably better in exactly one place — Apple Touch and the manifest icons at 180–512px, where it is fully legible — and a mixed implementation was offered on that basis. **Aron chose one artwork everywhere.** Do not reopen this without new measurements; the numbers above are the record.
+
+**`newFavicons/` and `oldFavicons/` were deleted on 2026-08-27** after confirming zero references anywhere in the repository. Neither was ever tracked. The production set was restored from `HEAD` rather than copied out of `oldFavicons/`: its PNGs were pixel-identical re-encodes carrying different bytes, and restoring keeps the exact bytes that have already passed `validateFavicons`. **One file in `oldFavicons/` was not a re-encode at all** — its `apple-touch-icon.png` was a bleed-to-edge transparent circle (RMSE 0.464 against the deployed file), having lost the opaque 10%-margin treatment described below. Copying that folder wholesale would have regressed iOS the way the 2026-08-19 incident regressed browser tabs.
+
+**The rejected wordmark master is kept on purpose, and is NOT a favicon.** `graphics/logos/masterFavicon_BG.png` — moved out of `graphics/favicons/` on 2026-08-27 precisely so it cannot be mistaken for one — is the 512x512 circular BLUEGRID wordmark mark. It is retained as a possible **alternate logo concept to show Chase**. Untracked. Do not wire it into any icon declaration.
 
 **The approved master is `graphics/favicons/Bluegrid_Favicon1.png`** — 512×512, transparent, pixel-identical to `web-app-manifest-512x512.png` (compare AE 0.22px). It is unreferenced by any page, so **it must not be pruned as a spare** (this nearly happened under item 22). `New folder/Bluegrid_Favicon.png` is a flattened-on-white export and is **not** the master.
 

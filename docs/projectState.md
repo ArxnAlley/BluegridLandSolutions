@@ -1,16 +1,35 @@
 # Project State — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-21 (session closeout — performance audit + fixes, representative browser QA + fixes, marketing-asset move, dev credit logo)
+**Last updated:** 2026-08-27 (session closeout — footer legal row, favicon decision and restore, Apps Script deployment confirmed by Aron)
 **Repository:** `c:/Dev/NuloWorkspace/ClientSites/client_BluegridLandSolutions/`
 **Branch:** `main`
 **Remote:** `origin` → `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`
 **Host:** **GitHub Pages.** See *Hosting* below.
-**Last CODE commit:** `90f10ec` — "Complete" (2026-08-21 18:39, author arxnalley). **85 files, +10,007 / −1,143.** Aron committed the entire working tree and **pushed it**.
-**Closeout commit:** `56dc948` — "Session closeout: performance audit and fixes, browser QA and fixes, dev credit logo" (2026-08-21). **Docs only, local, unpushed.** HEAD is this commit or the small `docs:` commit that records this hash immediately after it — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0`.
-**Sync:** `main` is **level with `origin/main`** — verified at closeout with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
-**Working tree:** **CLEAN.** `git status --porcelain` returns zero entries.
+**Last CODE commit:** `2080723` — "Footer links and devCredit fix" (author arxnalley). **34 files, +702 / −542** — the 33 pages plus `css/styleIndex.css`, carrying the footer legal-row restructure. Committed and pushed by Aron.
+**Closeout commit:** this session's docs-only commit, **local and unpushed**. HEAD is that commit or the small `docs:` commit recording its hash immediately after — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
+**Sync:** `main` was **level with `origin/main`** before this closeout commit — verified with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
+**Working tree:** **clean apart from two untracked logo files** — `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept deliberately as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`. No tracked file is modified or deleted.
 
-## THE BACKLOG IS NO LONGER A BACKLOG — IT SHIPPED
+## THE GOOGLE-SIDE WORK IS DONE — THE PIPELINE AND THE REPO NOW AGREE
+
+**Reported by Aron on 2026-08-27, and not verifiable from this repository.** All of it is
+recorded as his report rather than asserted as confirmed fact:
+
+- `config!notificationEmail` and `config!photoViewerEmail` in the Sheet **both confirmed as
+  the real BlueGrid Gmail account.** This was the standing P0 and it is closed.
+- **`config.gs` and `validation.gs` pasted into Apps Script**, and the existing deployment
+  updated with **Deploy → Manage deployments → pencil → New version** — the correct path,
+  which preserves the `/exec` URL all 33 forms post to.
+
+**Consequence: production is no longer a version behind the repository.** The photo-format
+narrowing to JPEG/PNG/WebP is live, and the two config constants match. Three closeouts have
+opened with "Aron must do the Google-side steps"; that task is finished and should not be
+looked for again.
+
+**Still true and unchanged:** Apps Script is a hand-pasted deployment. A future commit to
+`appsScript/*.gs` does not reach production on its own.
+
+## The 2026-08-21 backlog note, kept for its detail
 
 **Everything the previous three closeouts described as "uncommitted, unpushed, not in production" is now committed and pushed.** `90f10ec` swept the whole tree in one commit. That single change makes most of the previous header obsolete, so it has been rewritten rather than annotated.
 
@@ -70,19 +89,21 @@ Hardening, the performance pass and the representative browser QA are all
 complete, committed and pushed. The working tree is clean and there is no
 staged-but-unshipped work left anywhere in this repository.
 
+**The Google-side steps are DONE** (Aron, 2026-08-27 — the config tab confirmed,
+`config.gs` and `validation.gs` pasted, deployment updated with New version).
 What remains between here and handing the site to Chase is **not repository
-work**:
+work**, with one exception:
 
-1. **The Google-side steps only Aron can do** — the `config` tab check and the
-   Apps Script paste + redeploy. `config.gs` and `validation.gs` are committed
-   but a commit does not reach Apps Script.
+1. **Chase's intro video** — the one real content task left, and it is waiting
+   on him to email the file. See *NEXT SESSION SHOULD START HERE*.
 2. **The Chase review** — he has still never seen the site end to end.
 3. **Search Console** — property verification and sitemap submission.
+4. **Google Business Profile verification, and the Bing postcard/PIN** — both
+   external, client-side, and unresolved as far as this repository knows.
 
-See *Waiting on Aron* for the exact manual steps.
-
-**The previous three closeouts all opened with "resolve the working tree".
-That task is done and should not be looked for again.**
+**Three consecutive closeouts opened with "resolve the working tree" and the
+ones after them with "Aron must do the Google-side steps". Both are finished.
+Do not go looking for either again.**
 
 **Historical note (superseded):** the line below described the state at the
 2026-08-15 closeout and is kept because the phase table under it is still
@@ -92,7 +113,7 @@ accurate.
 
 `bluegridlandsolutions.com` is live, the Apps Script is deployed, and the full estimate-with-photos path was verified in production on 2026-08-15 by a public visitor in an incognito browser.
 
-**The repository is one Apps Script version ahead of production.** `config.gs` and `validation.gs` narrowed the accepted photo formats to JPEG/PNG/WebP after that deployment. Not a vulnerability — production runs the safe superset minus one format — but the two disagree until Aron pastes and redeploys. See *Waiting on Aron*.
+~~**The repository is one Apps Script version ahead of production.**~~ **RESOLVED 2026-08-27.** Aron pasted `config.gs` and `validation.gs` and updated the deployment with New version. The repo and production now run the same code, and the JPEG/PNG/WebP photo-format policy is live.
 
 | Phase | State |
 |---|---|
@@ -135,8 +156,11 @@ accurate.
 | **Both QA defects fixed** (consent privacy link on deep 404s, footer tap target) | **Complete, shipped in `90f10ec`** |
 | **Dev credit logo → `masterLogoTP240.webp`** | **Complete 2026-08-21** |
 | **Whole tree committed and pushed** (`90f10ec`) | **Complete 2026-08-21 — the site is serving it** |
+| **Footer legal row moved above the divider** (`2080723`) | **Complete 2026-08-27** |
+| **Favicon artwork decision — mountain/tree everywhere** | **Complete 2026-08-27; deployed set restored from `HEAD`** |
+| **Google-side config + Apps Script redeploy** (Aron) | **Complete 2026-08-27 — reported, not repo-verifiable** |
 
-**No launch blockers remain.** The open P0 is a configuration check Aron must make in the Google Sheet — see *Waiting on Aron*.
+**No launch blockers remain, and the P0 is closed.** The Google Sheet config check and the Apps Script redeploy were both completed by Aron on 2026-08-27.
 
 ---
 
@@ -222,15 +246,53 @@ Every header dimension is a `:root` custom property overridden in the two header
 
 ---
 
-## Verification State — all green, re-run 2026-08-21 at closeout
+## Verification State — all green, re-run 2026-08-27 at closeout
 
-**28 validator suites + 180/180 Apps Script harness = 29/29. Zero failures.**
-`node --check` clean on both browser JS files, CSS braces balanced
-(667/667, 126/126), `git diff --check` clean.
+**29/29 suites pass. Zero failures.** The runner enumerates the scratchpad
+directory rather than trusting a remembered number, so this count is measured:
+**28 scratchpad suites — 26 `validate*`, 2 `simulate*` — plus the Apps Script
+harness at 180/180.** One validator is new this session, so the comparable
+figure before it was 27 + harness.
+
+**Counting note, because the last three closeouts disagreed with each other.**
+"28 validator suites + harness = 29/29" was recorded on 2026-08-21, which does
+not add up against a directory holding 27 suites at the time; the harness was
+being counted twice. The number above comes from `ls`, not from notes.
+
+`node --check` clean on `js/indexJS.js`, `js/consent.js` and
+`appsScript/localTestRunner.js`. CSS braces balanced — **668/668** in
+`styleIndex.css` (was 667 before the footer work added `.footerLegalBar`),
+126/126 in `stylePages.css`. `git diff --check` clean.
+
+**One suite is new this session: `validateFooterLegalRow`** — 40 page/viewport
+combinations in real Chrome (5 page shapes x the 8 widths 1440/1024/820/768/
+600/430/390/375), asserting the legal row paints above the divider, the two
+zones below it stay fully visible and non-overlapping, the row wraps without a
+line ever starting with a separator, every control is hit-testable, and Cookie
+Settings still reopens the consent banner. **Injection-proven**: pushing the
+row below the divider and the credit past the right edge produced 95 failures
+naming exactly those two defects.
+
+**`validateAnalytics` was rewritten, not worked around.** Its footer section
+asserted the old three-zone grid (`1fr auto 1fr`, legal nav between copyright
+and credit) — the architecture this session deliberately replaced. It now
+asserts the new contract: a `.footerLegalBar` before `.footerBottomBar`, the
+nav outside `.footerBottomInner`, `1fr auto` below the divider, the legal row
+sharing the footer content column, and `flex-wrap` on the nav. This is item
+10i's predicted failure mode in its second form — a validator drifting out of
+sync with the code it guards — and it was caught because the suite failed
+rather than because anyone remembered.
+
+**A transit incident, recorded because item 10i predicted it.** The toolchain
+was carried into this session's scratchpad by copying `*.js` only, which left
+`fonts/` behind. `validateHeader`, `validateInsightsSection` and
+`validateMegaMenus` all died on a missing `inter600.extracted.ttf`. Nothing
+was wrong with the site. **Copy the whole scratchpad, not the scripts** — the
+suites depend on `fonts/`, `favaudit/`, `imgtest/` and `syntaxCheck/` too.
 
 **Page count is 33** — 32 indexable pages plus `404.html`, which is `noindex`
 and correctly excluded from the sitemap (32 `<loc>` entries). **158 tracked
-files** (was 116 before `90f10ec` committed the untracked backlog).
+files.**
 
 **Two suites are new this session, both guarding a defect found in the browser
 QA and fixed the same day:**
@@ -510,15 +572,14 @@ Created `docs/sessionCloseout.md` — a local, gitignored workflow document inst
 
 ## Currently In Progress
 
-**Nothing.** The working tree is clean and every body of work previously listed
-here is committed and pushed in `90f10ec`.
+**One thing, and it is blocked on Chase, not on us: the owner intro video.**
+Section 2 still ships the designed placeholder. Nothing has been built for the
+video this session because the file does not exist yet — see *NEXT SESSION
+SHOULD START HERE* for the exact sequence once it arrives.
 
-This section used to open "the working tree holds five bodies of finished,
-validated, uncommitted work — resolving it is the next task", and it said that
-across three consecutive closeouts. It is done. The five bodies (mobile UX
-pass, WebP migration, production hardening, hero estimate UX, process
-breakpoint), the favicon structural fixes, and this session's performance and
-QA work all shipped together.
+Everything else is committed and pushed. The working tree holds no tracked
+modifications; the only untracked files are two logos in `graphics/logos/`,
+both deliberate.
 
 **What has and has not been seen in a browser** — still the honest distinction,
 and it is now better than it was:
@@ -534,8 +595,8 @@ and it is now better than it was:
   on real hardware. Every viewport above is Chrome device emulation, not a
   phone in someone's hand. **Chase has still never seen the site end to end.**
 
-**Outside the repository:** production runs the previous Apps Script version,
-and the `config` tab still needs checking. See *Waiting on Aron*.
+**Outside the repository:** nothing is outstanding. Production runs the current
+Apps Script version and both config emails are confirmed, as of 2026-08-27.
 
 ---
 
@@ -589,9 +650,9 @@ in the same uncommitted tree:
 
 9. ~~**Confirm the host.**~~ **DONE — GitHub Pages.** Recorded under *Hosting* at the top of this file. No migration planned.
 
-10. **Aron's P0 config check** — `notificationEmail` and `photoViewerEmail` must both name the real accounts. **Still open. Not doable from this repository.** See *Waiting on Aron*.
+10. ~~**Aron's P0 config check**~~ — **DONE 2026-08-27.** Aron confirmed `notificationEmail` and `photoViewerEmail` in the Sheet's `config` tab both name the real BlueGrid Gmail account. Reported by Aron; not verifiable from this repository.
 
-11. **Paste the changed `.gs` files, deploy a new Apps Script version.** **Still open.** `config.gs` and `localTestRunner.js` changed this session on top of the earlier `validation.gs` change.
+11. ~~**Paste the changed `.gs` files, deploy a new Apps Script version.**~~ **DONE 2026-08-27.** `config.gs` and `validation.gs` pasted, existing deployment updated via **New version** — the path that preserves the `/exec` URL. Reported by Aron; not verifiable from this repository.
 
 12. **Page-by-page copy and browser QA.** **Still open.** The estimate flow, the uploader, the 404 page, the scrollbar fix and responsive image selection have all now been exercised in a real browser; **general layout and copy across 33 pages still has not been reviewed by a human.** Item 10m (Step 1's heading) sits here.
 7. **Chase review / major revision pass** — expect a real round of change requests.
@@ -612,8 +673,8 @@ in the same uncommitted tree:
 |---|---|---|
 | ~~1~~ | ~~**The new Apps Script is not deployed**~~ | **RESOLVED 2026-08-15.** Deployed and verified in production by a public incognito submission with five photos. |
 | ~~3~~ | ~~**Production domain undecided**~~ | **RESOLVED.** `bluegridlandsolutions.com` is live. |
-| 2 | **`config!notificationEmail` and `photoViewerEmail` must both name the real accounts** | Still unverifiable from this repo. `notificationEmail` was pointed at a test recipient for the live test and `photoViewerEmail` at a test Google account. **If either is still a test address, Chase gets nothing / cannot open photos.** Confirm both in the config tab before handing the site over. |
-| 4 | **Apps Script is one version behind the repo** | This session narrowed the accepted formats to JPEG/PNG/WebP. Until the four `.gs` files are pasted and a new version deployed, production still accepts HEIC. Not a vulnerability — the old policy is the safe superset minus one format — but the repo and production disagree. |
+| ~~2~~ | ~~**`config!notificationEmail` and `photoViewerEmail`**~~ | **RESOLVED 2026-08-27.** Aron confirmed both name the real BlueGrid Gmail account. Reported, not repo-verifiable. |
+| ~~4~~ | ~~**Apps Script is one version behind the repo**~~ | **RESOLVED 2026-08-27.** `config.gs` and `validation.gs` pasted and the deployment updated with New version. Repo and production now agree; the JPEG/PNG/WebP policy is live. Reported, not repo-verifiable. |
 | 4 | `MODULE_API_KEY` state unknown | Cannot be checked from outside — `leads.list` returns `UNAUTHORIZED` whether the key is unset or merely not supplied. Blocks only a future dashboard, never the public form. |
 
 ---
@@ -647,14 +708,17 @@ in the same uncommitted tree:
 - **Price ranges.** `seoPlan.md` calls cost transparency the biggest opening in this trade. No page quotes a dollar figure because none has been approved. **Rough per-acre or per-day ranges are the single highest-value upgrade available to the location pages** and cost one conversation.
 - **Confirm Rowan County / Morehead coverage.** If Chase does not work Rowan County, the Morehead page and all four data entries come back out.
 - **Real project photos** — ideally before/after pairs per service, tagged by location. Would unlock galleries on all 6 location pages and replace the Insights placeholders.
-- **Owner introduction video — OR a suitable owner photo.** Still outstanding as of 2026-08-18. The section is built and video-ready (two config fields, `introVideoUrl` + `introVideoConfigured`); a good photograph of Chase would also serve. This is now the main content gap in the owner/intro section, which the mobile pass deliberately lifted higher on phones.
+- **THE OWNER INTRO VIDEO — he has one and is emailing the original file.** This is the single most actionable item on the list and the next session's first task. **The file arrives rotated 180 degrees** and must be corrected before anything else is done with it. Section 2 still ships the designed placeholder. The section is video-ready through two config fields, `introVideoUrl` + `introVideoConfigured`. Full sequence in *NEXT SESSION SHOULD START HERE*.
+- **A better owner intro can replace it later.** The incoming file is what Chase can record today; a higher-quality version is expected once better recording equipment is available. Build the video path so swapping the source is a config change, not a rebuild.
+- **An alternate logo concept is waiting to be shown to him.** `graphics/logos/masterFavicon_BG.png` is the circular BLUEGRID wordmark mark. It was **rejected as a favicon** on measurement (`technicalDebt.md` item 39) but kept deliberately as a possible alternate logo to put in front of Chase. **It is not an approved production favicon and must not be used as one.**
 - **Badge artwork typo** — the official badge reads **"FORESTRV"**, not "FORESTRY". Off the website since 2026-08-11 (`technicalDebt.md` item 2); still wrong on any print/signage that uses the old artwork.
 - ~~**Confirm phone** `(740) 464-2526`~~ — **confirmed 2026-08-13**, printed on his own advertisement (`graphics/images/whatTheyDo2.jpg`).
 - ~~**Confirm business email**~~ — **RESOLVED 2026-08-18. The confirmed public business email is `bluegridls@gmail.com`.** `estimates@bluegridlandsolutions.com` is **not a confirmed mailbox** and must not remain the public-facing address. The swap is queue item 1 under *Final Production Hardening*; it has **not been made yet**.
 - **Retention period for customer photographs.** `BlueGrid Lead Photos` keeps them indefinitely and nothing deletes them. Needs a decision before it becomes a quiet liability — `technicalDebt.md` item 24i.
 - **The pre-launch review of the whole site** — the first time he sees it end to end, now that it is actually live.
 - **Confirm the Facebook page renders in the Page Plugin** → flip `facebookPageConfigured`.
-- **Google Business Profile** — does not exist; the footer icon is hidden at runtime.
+- **Google Business Profile — verification.** Outstanding as far as this repository knows; the footer icon is hidden at runtime until `googleBusinessUrl` is set. External, client-side.
+- **Bing Places — the postcard / PIN verification.** Same status: external, client-side, and unresolved as far as this repository knows. Neither this nor GBP is repository work, and neither blocks anything in the codebase.
 - **May we name Chase on the site?** Copy says "the owner" throughout.
 - **Company facts worth adding, now that there is a page to hold them.** `company/index.html` ships using only claims that already appear elsewhere on the site. **Nothing about history, credentials, awards, certifications, years in business, or crew size is on it, and none may be added without Chase confirming it.**
 - **Copy review** of the 6 location pages and 7 Insights articles.
@@ -662,27 +726,43 @@ in the same uncommitted tree:
 
 ## Waiting on Aron
 
-**One of these is a P0 and the rest are not.**
+**The P0 is closed and the Google-side sequence is finished.** Reported by Aron
+on 2026-08-27 and recorded as his report, because none of it can be checked
+from this repository:
 
-- **P0 — confirm `notificationEmail` and `photoViewerEmail` in the `config` tab both name the real accounts.** Acceptance testing deliberately used a *test recipient* for estimate email and a *separate test Google account* for Drive viewing. If either is still a test address the system looks perfectly healthy while Chase receives nothing, or cannot open a single photo. **Neither is verifiable from this repository.** Run `listRootFolderAccess()` from the Apps Script editor and read the config tab. Two minutes, and nothing else on this list matters until it is done.
-- **THE EXACT GOOGLE-SIDE STEPS, in this order.** The repo now sets `DEFAULT_PHOTO_VIEWER_EMAIL = 'bluegridls@gmail.com'` and lowercases `DEFAULT_NOTIFICATION_EMAIL` to match. **Neither change reaches production on its own** — those constants only *seed* config keys that do not already exist, and the live sheet has had both keys since the 2026-08-15 deployment.
+- ~~**P0 — confirm `notificationEmail` and `photoViewerEmail`**~~ — **DONE.**
+  Both name the real BlueGrid Gmail account.
+- ~~**Paste `config.gs` and `validation.gs`, redeploy**~~ — **DONE**, via
+  Deploy → Manage deployments → pencil → **New version**, which preserves the
+  `/exec` URL all 33 forms post to. Production and the repository now run the
+  same backend code and the JPEG/PNG/WebP photo policy is live.
 
-  1. **Paste the changed `.gs` files** — `config.gs` this session, `validation.gs` from the earlier photo-format change — then **Deploy → Manage deployments → pencil → Version: New version → Deploy.** Never "New deployment": it mints a different URL and silently breaks all 33 forms. (`localTestRunner.js` is a local harness and is never pasted.)
-  2. **Open the `config` tab and read `photoViewerEmail`.**
-     - **Blank** → nothing more to do. `getConfig()` applies a sheet value only when it is non-empty, so a blank cell now falls through to `bluegridls@gmail.com`.
-     - **Holds the test Google account** from acceptance testing → **edit it by hand to `bluegridls@gmail.com`.** A non-blank cell always beats the constant. This is the case that fails silently: everything looks healthy while Chase cannot open a single photo.
-  3. **Check `notificationEmail`** in the same tab. Acceptance testing pointed it at a *test recipient*; if it is not Chase's address he receives nothing.
-  4. **Run `shareRootFolderWithOwner()`** to grant Viewer on the photo root.
-  5. **Run `syncRootFolderAccess()`** to revoke the temporary test account, then **`listRootFolderAccess()`** to confirm the viewer list is exactly who it should be.
+**The historical detail of that sequence is kept in `appsScript/README.md`**,
+which is where it belongs — it will matter again if the Sheet or the script
+project is ever rebuilt. It is no longer duplicated here.
 
-  **The two keys stay separate on purpose** and merely hold the same address in production — the owner both receives the leads and opens the photographs. Do not collapse them into one setting.
+**One rule survives and always will:** the two config keys stay separate on
+purpose and merely hold the same address in production. The owner both receives
+the leads and opens the photographs. Do not collapse them into one setting.
 
-- **The same redeploy carries the photo-format change.** Production still accepts HEIC until step 1 is done. Not a vulnerability — the live policy is the safe superset minus one format — but repo and production disagree.
-- **Redeploy the website** so the front end and the API agree — `js/indexJS.js` changed. Ship both halves together.
-- **Decide the homepage geographic target.** An audit was delivered 2026-08-15 recommending the homepage stay regional; Aron has neither accepted nor rejected it. See *Open Decisions* below.
-- **Get four claims confirmed or corrected by Chase** — `technicalDebt.md` item 3a lists exactly what his own advertising does and does not support. The two needing him: whether he can commit to any estimate turnaround, and whether the certificate-of-insurance sentence is accurate. Also still open: `estimates@bluegridlandsolutions.com`, which appears on no artwork and may route nowhere.
-- **A real browser pass** on phone, tablet and desktop. Parts of the site have now been seen — the estimate flow and the photo uploader were exercised in production — but most layout still has not.
-- **Decide whether to delete `phase2a-lead-capture`.** Fully merged into `main`, kept deliberately.
+**Still genuinely open:**
+
+- **Decide the homepage geographic target.** An audit was delivered 2026-08-15
+  recommending the homepage stay regional; Aron has neither accepted nor
+  rejected it. See *Open Decisions* below.
+- **Get the remaining claims confirmed or corrected by Chase** —
+  `technicalDebt.md` item 3a lists what his own advertising does and does not
+  support. The two needing him: whether he can commit to any estimate
+  turnaround, and whether the certificate-of-insurance sentence is accurate.
+- **A real browser pass on real hardware.** 56 page/viewport combinations have
+  been driven in Chrome device emulation and the estimate flow and photo
+  uploader were exercised in production, but nothing has been seen on a phone
+  in someone's hand.
+- **Decide whether to delete `phase2a-lead-capture`.** Fully merged into
+  `main`, kept deliberately.
+- **Commit the validator toolchain** — `technicalDebt.md` item 10i. It cost
+  three suite failures again this session (see *Verification State*), and it
+  is still the most fragile thing about how this project is worked on.
 
 ---
 
@@ -700,81 +780,119 @@ in the same uncommitted tree:
 
 ## NEXT SESSION SHOULD START HERE
 
-**The repository side is finished, committed and pushed.** There is no code
-task waiting. What remains is Google-side work only Aron can do, then Chase.
+**There is exactly one real task queued, and it is gated on a file Chase is
+emailing: the owner introduction video.** Everything else in this repository is
+committed, pushed and validated, and the Google-side work is finished.
 
 1. **Read `CLAUDE.md`, then this file, then `engineeringJournal.md` and
    `technicalDebt.md`.** The repository is authoritative — correct stale
    documentation rather than carrying it forward. **Commit hashes recorded
    before 2026-08-15 no longer resolve.**
 
-2. **Verify Git state.** Expect `main`, working tree **clean**, and level with
-   `origin/main` apart from this closeout's docs commit (1 ahead, local and
-   unpushed). Check both directions with `git fetch` + `git rev-list
-   --left-right --count origin/main...HEAD`. **If the tree is dirty, someone
-   worked between sessions — find out what before proceeding.**
+2. **Verify Git state.** Expect `main`, and a working tree clean apart from two
+   deliberate untracked files in `graphics/logos/`
+   (`masterFavicon_BG.png`, `TPname.png`). Expect level with `origin/main`
+   apart from this closeout's docs commit (local, unpushed). Check both
+   directions with `git fetch` + `git rev-list --left-right --count
+   origin/main...HEAD`. **If a tracked file is dirty, someone worked between
+   sessions — find out what before proceeding.**
 
-3. **THE FIRST TASK is not in this repository.** It is Aron's Google-side
-   sequence, and nothing else on the list matters until it is done:
+3. **THE FIRST TASK: Chase's intro video, once the file arrives.** Do not start
+   any of it before the file exists — there is nothing to prepare in advance,
+   and the section already ships a designed placeholder.
 
-   - **P0 — confirm `notificationEmail` and `photoViewerEmail`** in the Sheet's
-     `config` tab both name the real accounts. Acceptance testing used a test
-     recipient and a separate test Google account. If either is still a test
-     address, the system looks perfectly healthy while Chase receives nothing
-     or cannot open a single photo.
-   - **Paste `config.gs` and `validation.gs`, then Deploy → Manage deployments
-     → pencil → New version → Deploy.** Never "New deployment" — it mints a
-     different URL and silently breaks all 33 forms. **A commit does not reach
-     Apps Script**; `90f10ec` changed `config.gs` in the repo only.
-   - Then `shareRootFolderWithOwner()`, `syncRootFolderAccess()`,
-     `listRootFolderAccess()`.
+   Where everything lives:
 
-   Full detail in *Waiting on Aron*.
+   | Piece | Location |
+   |---|---|
+   | Section | `index.html`, `<section id="meetTheOwner">` — "Owner Introduction Section" |
+   | Slot the player replaces | `#introMediaSlot` |
+   | Injector | `initializeIntroVideo()` in `js/indexJS.js` |
+   | Config | `businessConfig.introVideoUrl`, `.introVideoConfigured`, `.introVideoPoster` |
+   | Self-hosted destination | `graphics/videos/` — currently empty |
 
-4. **Then the Chase review.** He has never seen the site end to end. Expect it
-   to generate its own list of changes.
+   The sequence, in order:
 
-5. **If a code task is wanted instead**, the ranked candidates are in
-   `technicalDebt.md`: the remaining performance items M1 (self-host the two
-   Google fonts, ~1.7s of render-blocking on simulated mobile) and M2 (two
-   Unsplash hotlinks, 483 KB on desktop), then the tree/brush-clearing service
-   page (item 3b), then location pages 7–11.
+   1. **Rotate it 180 degrees.** The original is upside down. This is the first
+      step and everything after it depends on it — do not optimise, poster, or
+      publish an unrotated file.
+   2. **Assess and optimise for web.** Check duration, dimensions, bitrate,
+      codec and audio before deciding anything. Aim for a self-hosted MP4
+      (H.264 + AAC, `faststart`) unless the file is large enough that a
+      YouTube or Vimeo embed is the better answer — the injector supports all
+      three and needs no markup change either way.
+   3. **Create poster media if needed.** `introVideoPoster` currently points at
+      `graphics/images/excavator2_PiketonOH.webp`. A frame from the video is
+      usually the better poster; generate one only if it beats the photo.
+   4. **Replace the Section 2 placeholder** by setting `introVideoUrl` and
+      flipping `introVideoConfigured` to `true`. **No markup changes are
+      required** — that is what the injector exists for. If you find yourself
+      editing `index.html`, stop and re-read `initializeIntroVideo()`.
+   5. **Targeted QA, not a full sweep.** Homepage only, in a real browser: the
+      player renders in `#introMediaSlot`, controls work, the poster shows
+      before play, nothing overflows at 1440 / 768 / 390, and reduced motion
+      is respected. Then run the full suite — `validateAssets` will catch a
+      mistyped path and `validateResponsiveImages` will notice a new poster.
+   6. **Commit, push and deploy** as needed. Publishing the video is a
+      front-end-only change; it does not touch Apps Script.
 
-6. **The validator toolchain is still not in the repository** —
-   `technicalDebt.md` item 10i, and still the most fragile thing about how this
-   project is worked on. **Twenty-eight suites** as of 2026-08-21, the 26 named
-   in the item plus **`validateConsentPrivacyLink`** and
-   **`validateFooterSocialTarget`**, both written this session. It lives in a
-   session scratchpad, carried by hand, and one suite was already lost in
-   transit once.
+   **A better recording is expected later.** Chase's current file is what he can
+   record today; higher-quality equipment is coming. Keep the swap a config
+   change so replacing it costs one line.
 
-   **Re-run everything to establish a baseline before changing anything.**
+4. **Then the Chase review.** He has still never seen the site end to end.
+   Expect it to generate its own list of changes.
+
+5. **If the video has not arrived**, the ranked code candidates are in
+   `technicalDebt.md`: performance items M1 (self-host the two Google fonts,
+   ~1.7s of render-blocking on simulated mobile) and M2 (two Unsplash hotlinks,
+   483 KB on desktop), then the tree/brush-clearing service page (item 3b),
+   then location pages 7–11.
+
+6. **External, client-side, and not repository work:** Google Business Profile
+   verification and the Bing Places postcard/PIN. Both were still unresolved at
+   this closeout. Neither blocks anything in the codebase.
+
+7. **The validator toolchain is still not in the repository** —
+   `technicalDebt.md` item 10i. **28 scratchpad suites** as of 2026-08-27
+   (26 `validate*`, 2 `simulate*`) plus the Apps Script harness. It cost three
+   suite failures again this session because only the `*.js` files were carried
+   forward and `fonts/` was left behind. **Copy the whole scratchpad
+   directory**, then re-run everything to establish a baseline before changing
+   anything.
 
 ### Do NOT redo any of this
 
-- **The working tree is resolved.** Three consecutive closeouts opened with
-  "resolve the working tree". It shipped in `90f10ec`. Do not go looking for
-  uncommitted work.
+- **The Google-side work is finished.** Config emails confirmed, `config.gs`
+  and `validation.gs` pasted, deployment updated with New version. Three
+  closeouts carried this as the P0. It is done.
+- **The working tree is resolved**, and has been since `90f10ec`. Do not go
+  looking for uncommitted work.
+- **The favicon question is settled: the mountain/tree artwork, everywhere.**
+  A second package built on the circular BLUEGRID wordmark was measured against
+  it and rejected; the deployed set was restored from `HEAD` and the comparison
+  folders deleted. The measurements are in `technicalDebt.md` item 39. **Do not
+  reopen this without new measurements**, and do not mistake
+  `graphics/logos/masterFavicon_BG.png` for an approved favicon — it is kept
+  only as an alternate logo concept to show Chase.
+- **The footer legal row is deliberate.** The legal links sit in
+  `.footerLegalBar` **above** the divider; only the copyright and the developer
+  credit are below it, on a `1fr auto` grid. Putting the links back into
+  `.footerBottomInner` re-creates the defect that squeezed the credit toward
+  the viewport edge. `validateFooterLegalRow` guards it in real Chrome.
 - **The performance audit is done and its top three findings are fixed.**
-  Mobile 75 → 79 and desktop 91 → 95 on a gzip-serving local host, LCP 7.7s →
-  5.6s mobile and 2.0s → 1.4s desktop. **Do not re-audit from scratch**; the
-  baseline, the method and the remaining ranked items are in the journal entry
-  for 2026-08-20 and in `technicalDebt.md` items 25/36/44.
+  **Do not re-audit from scratch**; the baseline, method and remaining ranked
+  items are in the 2026-08-20 journal entry and `technicalDebt.md` items
+  25/36/44.
 - **`favicon.svg` is no longer linked, deliberately.** It is a 307KB raster in
-  an SVG wrapper that browsers preferred over the `.ico`. The file stays on
-  disk; **do not re-add the `<link>`** without re-measuring. The artwork was
-  not touched.
+  an SVG wrapper — zero vector elements, one base64 `<image>` — that browsers
+  preferred over the `.ico`. The file stays on disk; **do not re-add the
+  `<link>`** without re-measuring.
 - **The hero entrance releases per element on `transitionend`.** That is what
-  un-gates LCP. Three CSS-only alternatives were measured first and moved
-  nothing — forcing the headline and copy to opacity 1, releasing `will-change`
-  alone, and removing the transition-delay. **Do not "simplify" it back to the
-  single 2200ms teardown**, and do not delete the 2200ms timer: it is the
-  entrance's choreography anchor and the backstop for an interrupted
-  transition.
-- **Responsive images are at their compression floor.** Re-verified 2026-08-21:
-  a 1024 rung of `excavator.webp` is 3% LARGER than the 1536 original at
-  matched quality, 1% larger even with `-define webp:method=6`. Savings only
-  appear at q85/q80, which is out of policy. **Do not "complete" the ladder.**
+  un-gates LCP. **Do not "simplify" it back to the single 2200ms teardown**,
+  and do not delete the 2200ms timer.
+- **Responsive images are at their compression floor.** Re-verified 2026-08-21.
+  **Do not "complete" the ladder.**
 - **The favicon artwork, the six JPEG holdouts, the double-scrollbar fix, the
   699px process breakpoint and the root-absolute `404.html`** all still carry
   their original do-not-touch notes. They have not changed.
