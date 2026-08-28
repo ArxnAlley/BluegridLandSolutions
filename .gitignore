@@ -25,6 +25,38 @@
 
 graphics/marketingAssets/
 
+# ── The owner video's archival master ──
+#
+# graphics/videos/IntroVideoFromChase.mp4 is Chase's original recording,
+# 9MB, and nothing on the site loads it. What the site serves is
+# chaseIntro.web.mp4 beside it — a lossless `-c copy -movflags
+# +faststart` remux whose video and audio bitstreams hash identically to
+# the master's. The master is the source; the web copy is the artifact.
+#
+# It is excluded for the same reason as the marketing collateral above,
+# and one more besides: this repository is published with GitHub Pages,
+# so committing it would put a 9MB file into Git history permanently AND
+# make it publicly downloadable, to serve a file no page references.
+# Deleting it in a later commit would not shrink the history.
+#
+# Archived at ClientSites/_archive/client_BluegridLandSolutions/video/,
+# outside this repository, before this rule was added. A copy is kept
+# here too so it is to hand — same arrangement as the collateral above.
+#
+# THE THREE FILES BESIDE IT ARE PRODUCTION ASSETS AND MUST STAY TRACKED:
+# chaseIntro.web.mp4, chaseIntro.poster.webp and chaseIntro.en.vtt are
+# all referenced from js/indexJS.js. Do not widen this into a
+# graphics/videos/ rule or the owner introduction section breaks.
+
+graphics/videos/IntroVideoFromChase.mp4
+
+# ── QA tooling dependencies ──
+#
+# _qa/ holds the browser validation suite and is tracked. Its one npm
+# dependency is not.
+
+_qa/node_modules/
+
 # ── Local session-closeout SOP ──
 #
 # A workflow instruction file for Claude sessions, not project content.

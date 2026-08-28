@@ -4,6 +4,300 @@ Append-only. Newest entry at the top.
 
 ---
 
+## 2026-08-27 (second session) — THE OWNER VIDEO SHIPPED, AND THE FIRST VALIDATORS ENTERED THE REPOSITORY
+
+**Uncommitted at the time of writing.** Chase's introduction video arrived and
+Section 2 is live: a lossless faststart web copy, a poster cut from the video
+itself, a centred play affordance, and draft captions transcribed from his own
+audio. Separately, `_qa/` was created — the first validation infrastructure this
+project has ever version-controlled (item 10i).
+
+---
+
+### 1. The rotation that wasn't
+
+Three closeouts carried the instruction **"the file arrives rotated 180 degrees
+and must be corrected before anything else is done with it."** It was wrong, and
+acting on it would have shipped Chase upside down.
+
+`ffprobe` reports a **Display Matrix side-data block with `rotation=-180`**. The
+pixels *are* stored inverted, but the rotation is metadata every browser honours
+on playback. Re-encoding with a rotation filter would have baked the correction
+into the pixels **while leaving the matrix in place**, and the browser would then
+have applied it again.
+
+The right move was to change nothing about the picture. What the file actually
+needed was a container fix, not a rotation.
+
+**How it was proven rather than assumed.** A frame is drawn from the live
+`<video>` into a canvas and compared against the same timestamp decoded by
+ffmpeg, which applies the matrix by default. Mean absolute difference against
+the upright reference is **4.81**; against that reference rotated 180 degrees it
+is **65.43**. A second, model-free check backs it up: the top strip of the frame
+is brighter than the bottom (sky above ground, 165.0 vs 115.3). Both now live in
+`_qa/verifyIntroVideo.js`.
+
+### 2. What was actually wrong with the file: `moov` at the end
+
+The master is `ftyp -> mdat -> moov`, with the index at **offset 8,989,444** —
+the very end. A browser cannot begin playback until it has the `moov` atom, so a
+progressive load has to reach the tail of an 8.6MB file before the first frame
+draws.
+
+Fixed with a **stream copy, not a re-encode** — `-c copy -movflags +faststart`.
+Result: `ftyp -> moov -> free -> mdat`, with `moov` at **offset 32**.
+
+**Verified lossless three ways.** The H.264 elementary stream hashes identically
+before and after (`172aaf2c...`), so does the AAC stream (`bd9cbed1...`), and so
+does a `framemd5` of the fully decoded output (`e298a6b9...`). Nothing was
+re-encoded; only the container was rewritten. Later, extracting the poster frame
+from the master and from the web copy produced **byte-identical PNGs** — a
+fourth confirmation, for free.
+
+The file also shed **276,189 bytes** on the way through, because ffmpeg's default
+stream selection dropped **six `mebx` Apple timed-metadata tracks** the master
+carries. Nothing references them.
+
+### 3. `preload="none"`, and why faststart still mattered
+
+The section keeps `preload="none"`: **not one byte of the 8.7MB video is fetched
+until a visitor presses play.** Verified — 21 requests on initial load, none of
+them `.mp4`, and `readyState === 0` before interaction.
+
+That makes faststart look pointless at first glance, and it is worth writing down
+why it is not. Faststart did not buy a cheaper *preload*; it bought a faster
+*start*. The moment play is pressed, the browser has the index in the opening
+bytes instead of needing a second range request into the tail. The original
+comment in the config justified `preload="none"` partly by "the moov atom is at
+the end", and that reasoning had to be rewritten once it no longer was.
+
+### 4. Captions, and one word left deliberately wrong-looking
+
+No speech-to-text was available locally and this ffmpeg build has no `whisper`
+filter, so a `faster-whisper` environment was built in a scratchpad venv — never
+in the user's global Python — and the audio transcribed with **three** models:
+`small.en`, `medium.en`, and `large-v3-turbo`.
+
+Running three was not thoroughness for its own sake; it was how the ambiguous
+words got settled by vote rather than by guess:
+
+| heard | small | medium | turbo | shipped |
+|---|---|---|---|---|
+| "My name is / name's Chase" | name's | is | is | **is** (2 of 3) |
+| "owner and operator / owner-operator" | and operator (`p=0.32`) | owner-operator | owner-operator | **owner-operator** |
+| "the works / work's there" | works | works | work's | **works** (2 of 3) |
+
+Two corrections were applied on top, and they are corrections rather than
+inventions: all three models heard **"Blue Grid Lane Solutions"** and **"lane
+clearing"**. The company is *Land* Solutions and *land clearing* is a named
+service with its own page. A final `/d/` before `/s/` and `/k/` goes unreleased
+in ordinary speech, which is exactly why all three made the same mistake.
+
+**"bush hogging" was left exactly as spoken**, and this is the interesting one.
+All three models heard *bush* with high confidence. The site's own copy says
+**"brush hogging" 100+ times against two instances of "bush"**. Captions
+transcribe speech, not house style, so the VTT records what Chase said and the
+mismatch is flagged in the file's own `NOTE` header. Aron confirmed it stays.
+
+**The track is attached but not defaulted on.** `default` would paint unapproved
+wording across his face for every visitor. It is one line to enable once signed
+off.
+
+### 5. The poster: chosen by measurement, not by taste
+
+`introVideoPoster` had been pointing at a job photograph of an excavator — a
+4:3 picture of a machine standing in for a video about a person.
+
+Candidate frames were scored on **variance of the Laplacian over a fixed
+head-and-shoulders window**, so the numbers compare directly across candidates:
+
+| t | face sharpness | reads as |
+|---|---|---|
+| **21.30s** | **1096** | mouth closed, square to camera — **chosen** |
+| 20.43s | 1076 | near-identical, mouth slightly parted |
+| 10.27s | 950 | arm sweeping across the cleared trail |
+| 9.87s | 825 | same gesture, softer face |
+| 1.73s | 740 | calm and pre-speech, but he is furthest away and in brim shadow |
+| 22.20s | 667 | motion blur |
+
+**A method note worth keeping.** The first attempt located his face by
+background-median subtraction — the camera is locked off, so the per-pixel median
+across a window is a clean plate. It works well where he moves and **fails
+silently where he does not**: in the 1.0–2.2s window he is almost motionless, so
+he contaminates his own background plate and the scores there are meaningless.
+The fixed-window measurement above replaced it. *A segmentation trick that
+depends on motion cannot be trusted on a frame chosen for stillness.*
+
+WebP quality was then tuned against his face specifically rather than the whole
+frame — the background foliage is high-frequency and would have dominated a
+whole-frame metric:
+
+| q | bytes | face SSIM | face PSNR |
+|---|---|---|---|
+| 85 | 48,768 | 0.9776 | 39.5 dB |
+| **88** | **54,972** | **0.9818** | **40.5 dB** |
+| 90 | 60,794 | 0.9845 | 41.3 dB |
+
+q88 clears both transparency thresholds with returns flattening after. The
+encoded poster retains **98.3%** of the lossless face-window sharpness, and at
+**54,972 bytes it is 58% lighter than the 130,782-byte photograph it replaced** —
+which matters, because a poster takes no `srcset` and is fetched in full on
+first load.
+
+It lives in `graphics/videos/`, not `graphics/images/`, because in that folder
+the `-640`/`-1024` suffix means "member of a responsive set" and a poster has no
+siblings.
+
+### 6. The play affordance
+
+Chrome on the desktop draws a control bar along the bottom and **nothing in the
+middle**. With a poster of a man standing in a field, the section read as a
+photograph rather than as something to press.
+
+A real `<button>` is now injected beside the player. It covers the whole frame,
+so the poster itself is the click target; it carries an accessible name and a
+border-drawn triangle (no SVG, no extra request); and it listens for the **`play`
+event** rather than its own click, so starting playback from the control bar or
+the keyboard dismisses it too. It sits inside the slot that already owns the 16:9
+box, so it reserves no new space — **CLS measured 0.0008**.
+
+Reduced motion follows the convention the CTAs already set in this stylesheet:
+the colour change survives because it is feedback, the transform goes.
+
+### 7. THE BUG THAT WASN'T: a test server that lied
+
+Worth recording in full, because it cost a session and looked exactly like a real
+defect.
+
+A caption assertion failed with **"no active cue at t=10.5s"**. Everything
+pointed at a broken caption track.
+
+The captions were fine. **`python -m http.server` does not implement the `Range`
+header.** Chrome cannot seek inside a media file served without it: a forward
+seek past the buffer makes it abort the load and restart from byte 0, and
+`currentTime` silently comes back as **0.00** instead of the value that was set.
+
+Two things confirmed it. Serving the same files from a range-capable server made
+the assertion pass immediately — and the **orientation measurement simultaneously
+sharpened from 25.54 to 4.81**, because that earlier seek had also been landing
+on frame 0 rather than t=5.0. One broken assumption had been quietly degrading a
+second, unrelated measurement.
+
+**The fix is infrastructure, not a workaround.** `_qa/rangeServer.js` implements
+`206 Partial Content`, and `verifyIntroVideo.js` now asserts *that the seek
+actually landed* before drawing any conclusion from the frame — so the symptom
+can never be misread the same way again.
+
+**Lesson:** when a browser test fails, rule out the harness before the site. A
+convenience one-liner is a dependency with behaviour, and here its behaviour
+differed from production in a way that produced a plausible false positive.
+
+### 8. `_qa/` — the first validators in version control (item 10i)
+
+Item 10i has been open for weeks: 28 validator suites living in session
+scratchpads, **already lost in transit twice**. This session it was addressed in
+part rather than in full.
+
+`_qa/` now holds `rangeServer.js`, `verifyIntroVideo.js` (56 checks),
+`regressionPages.js` (33 pages), a shared `lib/harness.js`, and `runAll.js` as
+the entry point. **90/90 passing.** Its one dependency, `puppeteer-core`, is
+declared in `_qa/package.json`; `node_modules` is ignored.
+
+Three choices made specifically because this item's history is a history of rot:
+
+- **The page list is discovered by walking the repo, not written down.** During
+  this very session a hand-typed URL produced a confident failure that was a typo
+  in the test, not a defect in the site — a hardcoded list is a liability.
+- **The orientation reference frame is generated by ffmpeg on demand**, not
+  committed. A 170KB raw binary would go stale the moment the video changed and
+  nobody would notice.
+- **The folder is `_qa`, not `qa`.** This repository *is* the deployed site.
+  Jekyll — which Pages runs, there being no `.nojekyll` — does not copy
+  `_`-prefixed directories into the built site. Recorded as item 53 along with
+  the caveat that this has not been checked against live.
+
+**Deliberately not preserved:** the frame-scoring scripts, the transcription
+harness, the poster previews, the screenshot generators. They answered questions
+that are now answered; their conclusions are in this entry. Committing them would
+have been committing rot.
+
+**Item 10i is not closed.** The 28 scratchpad suites were not carried into this
+session and were not run. `validateAssets` — still the only guard against a
+casing-mismatch 404 that Windows hides and GitHub Pages punishes — remains in no
+repository anywhere.
+
+### 9. The master is out of the repository
+
+`IntroVideoFromChase.mp4` is 9MB, nothing on the site loads it, and this repo is
+served by GitHub Pages. Committing it would have put it permanently in Git
+history *and* made it publicly downloadable, to serve a file no page references.
+
+Archived to `ClientSites/_archive/client_BluegridLandSolutions/video/` and
+verified byte-identical **before** the ignore rule was added, then excluded.
+`git log --all -- <path>` returns zero commits, so no history rewrite is needed.
+The ignore rule names the single file and carries a warning against widening it
+to `graphics/videos/`, which would break the section.
+
+**The trade-off is now recorded as item 52:** the one irreplaceable artifact in
+the project is the one artifact version control is no longer looking after, and
+the archive is on the same disk as the working copy.
+
+### Files Created
+
+- `graphics/videos/chaseIntro.web.mp4` — 8,742,071 B faststart remux
+- `graphics/videos/chaseIntro.poster.webp` — 640x360, 54,972 B
+- `graphics/videos/chaseIntro.en.vtt` — 13 cues
+- `_qa/runAll.js`, `_qa/rangeServer.js`, `_qa/verifyIntroVideo.js`,
+  `_qa/regressionPages.js`, `_qa/lib/harness.js`, `_qa/package.json`,
+  `_qa/README.md`
+- `ClientSites/_archive/client_BluegridLandSolutions/` (outside the repo)
+
+### Files Modified
+
+- `js/indexJS.js` — poster/source/captions config, caption `<track>` injection,
+  play affordance injection, `preload` rationale rewritten
+- `css/styleIndex.css` — play affordance, reduced-motion guard, corrected the
+  `object-fit: cover` comment whose stated reason (a 4:3 stand-in) no longer held
+- `.gitignore` — master excluded, `_qa/node_modules/` excluded
+- `index.html` — **unchanged this session.** The injector did the whole job, as
+  item 13 predicted it would.
+
+### Validation Performed
+
+- `node _qa/runAll.js` -> **90/90** (56 video + 34 sitewide)
+- All **33 pages** load 200, one `h1` each, zero console/page errors, and
+  **every asset every page requests resolves** — checked by recording each 404
+  the server serves rather than by trusting `fs.existsSync`
+- No `.mp4` **or** `.vtt` request on initial load, at 1440/768/390
+- Playback started by a genuine `page.click()` with **no autoplay-policy
+  override**
+- `node --check` clean on `js/indexJS.js`; CSS braces balanced **679/679**
+- Master re-verified byte-identical (MD5 `63f9fa5255a4840db6abbd29d5dfd950`)
+
+**Not run:** the 28 scratchpad validator suites. They were not carried into this
+session. This is the third consecutive session in which item 10i has cost
+something.
+
+### Lessons Learned
+
+- **A carried-forward instruction is a hypothesis, not a fact.** "It arrives
+  rotated 180 degrees" survived three closeouts and was wrong. Ninety seconds of
+  `ffprobe` beat three sessions of notes.
+- **Rule out the harness before the site.** A test server without `Range` support
+  produced a failure indistinguishable from a broken caption track, and quietly
+  corrupted a second measurement at the same time.
+- **Measure on the thing you care about.** Whole-frame sharpness and whole-frame
+  SSIM are both dominated by background foliage; every decision that mattered
+  here came from measuring *his face*.
+- **A clever automatic method can fail silently on exactly the input you chose it
+  for.** Background-median subtraction needs motion; the calmest candidate frames
+  are the ones with none.
+- **Preserve what catches regressions; discard what answered a question.** The
+  poster-scoring scripts did their job and would only rot. The range server will
+  be needed every single time anyone tests media again.
+
+---
+
 ## 2026-08-27 — THE FOOTER LEGAL ROW, THE FAVICON DECISION, AND TWO TOOLCHAIN LESSONS
 
 **Committed by Aron as `2080723` "Footer links and devCredit fix"** — 34 files,

@@ -1,0 +1,15 @@
+{
+  "name": "bluegrid-qa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser validation suite for the BlueGrid Land Solutions static site. Not part of the published site.",
+  "scripts": {
+    "qa": "node runAll.js",
+    "qa:video": "node runAll.js --video",
+    "qa:pages": "node runAll.js --pages",
+    "serve": "node rangeServer.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

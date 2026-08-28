@@ -45,21 +45,82 @@ const businessConfig = {
     // filling it in is the whole activation.
     googleBusinessUrl: '',
 
-    // THE OWNER INTRODUCTION VIDEO GOES HERE.
+    // THE OWNER INTRODUCTION VIDEO.
     //
-    // Until it is supplied, #introMediaSlot holds a real job photograph.
-    // Paste any one of the forms below and set introVideoConfigured to
-    // true; initializeIntroVideo() then replaces the figure with a player
-    // and no markup changes:
+    // Chase's own recording, self-hosted. Other accepted forms, should
+    // this ever move to a hosting platform — initializeIntroVideo()
+    // detects which it is and needs no markup change either way:
     //   YouTube      https://www.youtube.com/watch?v=VIDEO_ID  (or youtu.be/ID)
     //   Vimeo        https://vimeo.com/VIDEO_ID
     //   Self-hosted  graphics/videos/chaseIntroduction.mp4
-    introVideoUrl: '',
+    //
+    // THIS IS THE WEB-DELIVERY COPY, NOT THE MASTER.
+    //
+    // graphics/videos/IntroVideoFromChase.mp4 is Chase's untouched
+    // original and stays on disk as the master — do not delete it and
+    // do not point this key at it. chaseIntro.web.mp4 is a lossless
+    // remux of that master, `ffmpeg -c copy -movflags +faststart`:
+    // nothing was re-encoded, only the container was rewritten. The
+    // H.264 and AAC elementary streams hash identically to the
+    // master's, so this is the same picture and the same sound —
+    // 1280x720, H.264 Main L3.1, 30fps, AAC-LC 44.1kHz stereo, 29.2s.
+    //
+    // Two things about it are load-bearing and must be re-checked if it
+    // is ever replaced:
+    //
+    //   1. It carries a -180 degree DISPLAY MATRIX. The pixels are
+    //      stored upside down and the browser is relied on to apply the
+    //      matrix and stand Chase up. A stream copy preserves it; a
+    //      careless re-encode drops it and ships him inverted. Check
+    //      this first, every time.
+    //   2. The moov atom is now at the FRONT of the file, ahead of
+    //      mdat. That is the entire point of the copy: playback can
+    //      start on the opening bytes instead of needing a seek to the
+    //      tail of an 8.3MB file before the first frame can be drawn.
+    //      The master still has moov last, which is why it is not the
+    //      file that ships.
+    introVideoUrl: 'graphics/videos/chaseIntro.web.mp4',
 
-    introVideoConfigured: false,
+    introVideoConfigured: true,
 
-    // Poster frame used by the self-hosted player and the placeholder.
-    introVideoPoster: 'graphics/images/excavator2_PiketonOH.webp'
+    // ENGLISH CAPTIONS — DRAFT, NOT YET APPROVED.
+    //
+    // Transcribed from Chase's own audio, not written from a script.
+    // initializeIntroVideo() attaches it as a <track kind="captions">
+    // but does NOT set `default`, so it appears in the player's
+    // captions menu without painting unapproved wording over his face.
+    // Approving it is one line in the injector — see the comment there.
+    //
+    // Clearing this key removes the track entirely; the player is
+    // unaffected either way.
+    introVideoCaptions: 'graphics/videos/chaseIntro.en.vtt',
+
+    // POSTER — a real frame of Chase, cut from his own recording.
+    //
+    // Frame t=21.30s of the master, scaled to 640x360 and encoded as
+    // WebP q88: 54KB. It was chosen on measurement, not on taste — it
+    // is the sharpest his face gets anywhere in the 29.2s, his mouth is
+    // closed, and he is square to the camera. An open mouth frozen
+    // mid-word reads as an accidental screenshot; a closed one reads as
+    // a portrait.
+    //
+    // IT LIVES BESIDE THE VIDEO, NOT IN graphics/images/. The -640 and
+    // -1024 suffixes in that folder mean "member of a responsive set",
+    // and a poster takes no srcset, so it has no ladder siblings and
+    // would be the odd file out there. Keeping it next to the .mp4 and
+    // the .vtt also keeps the four pieces of this one video together.
+    //
+    // SIZE IT DELIBERATELY IF IT IS EVER REPLACED. A poster takes
+    // neither srcset nor loading="lazy", so whatever is named here is
+    // fetched at full size during initial page load. This one is 54KB,
+    // less than half the 131KB job photograph it replaced. Do not point
+    // it at a full-resolution still: the 2048 variant of that old
+    // poster cost 460KB and pushed hero LCP out by ~130ms when it was
+    // measured.
+    //
+    // It is 16:9, exactly like the video, so the frame looks identical
+    // before and after playback begins.
+    introVideoPoster: 'graphics/videos/chaseIntro.poster.webp'
 
 };
 
@@ -4619,15 +4680,137 @@ function initializeIntroVideo()
 
         player.controls = true;
 
-        player.preload = 'metadata';
+        /* Still none, not metadata, even though the faststart copy
+           made a metadata preload cheap — the moov atom sits at the
+           front of the file now, so the header is the first thing on
+           the wire rather than a seek into the tail. Cheap is not free:
+           metadata opens a connection and pulls the header of a video
+           nobody has asked to watch, on every single page load,
+           competing with the hero for bandwidth. Nothing is requested
+           until the visitor presses play. What faststart bought is not
+           a cheaper preload but a faster *start* — the moment play is
+           pressed, the browser has what it needs from the opening
+           bytes instead of waiting on a second range request. */
+
+        player.preload = 'none';
 
         player.setAttribute('playsinline', '');
+
+        /* A <video> has no intrinsic accessible name. The iframe branch
+           above gets one from title; this branch needs its own or the
+           control group announces as an unlabelled video. */
+
+        player.setAttribute(
+            'aria-label',
+            'Introduction from Chase DeVore, owner of BlueGrid Land Solutions'
+        );
+
+        /* English captions, transcribed from Chase's own audio.
+           DELIBERATELY NOT DEFAULTED ON: the wording is still a draft
+           awaiting his approval, and `default` would paint unapproved
+           text over his face for every visitor. Until it is signed off
+           the track is offered in the player's own captions menu,
+           which is enough for it to be available and testable.
+
+           To turn it on once approved, one line: captionTrack.default
+           = true. Nothing else needs to change.
+
+           The track is appended BEFORE the player enters the document
+           so the browser sees src and the track together in one pass
+           rather than reloading the media element. */
+
+        if (businessConfig.introVideoCaptions)
+        {
+
+            const captionTrack = document.createElement('track');
+
+            captionTrack.kind = 'captions';
+
+            captionTrack.srclang = 'en';
+
+            captionTrack.label = 'English';
+
+            captionTrack.src = businessConfig.introVideoCaptions;
+
+            player.appendChild(captionTrack);
+
+        }
 
     }
 
     introMediaSlot.textContent = '';
 
     introMediaSlot.appendChild(player);
+
+    /* ── The play affordance ──
+
+       Only the self-hosted branch needs one. YouTube and Vimeo draw
+       their own centred button inside the iframe; Chrome, for a bare
+       <video>, draws a control bar along the bottom and nothing in the
+       middle — so a poster frame of Chase standing in a field reads as
+       a photograph and not as something to press.
+
+       The button covers the whole frame, which makes the poster itself
+       the click target, and it is removed the first time playback
+       starts so the native controls are never left obstructed. It
+       listens for 'play' rather than for its own click, so starting
+       playback from the control bar or the keyboard dismisses it too.
+
+       It is appended into a slot that already owns its 16:9 box, so it
+       reserves no new space and cannot shift the page. */
+
+    if (player.tagName === 'VIDEO')
+    {
+
+        const playOverlay = document.createElement('button');
+
+        playOverlay.type = 'button';
+
+        playOverlay.className = 'introPlayOverlay';
+
+        playOverlay.setAttribute(
+            'aria-label',
+            'Play the introduction from Chase DeVore, owner of BlueGrid Land Solutions'
+        );
+
+        const playIcon = document.createElement('span');
+
+        playIcon.className = 'introPlayIcon';
+
+        playIcon.setAttribute('aria-hidden', 'true');
+
+        playOverlay.appendChild(playIcon);
+
+        playOverlay.addEventListener('click', function ()
+        {
+
+            const started = player.play();
+
+            /* play() rejects if the browser refuses the request. It
+               should not here — this is a direct user gesture — but an
+               unhandled rejection would surface as a console error, and
+               leaving the overlay in place is the right answer anyway:
+               the visitor can simply press it again. */
+
+            if (started && typeof started.catch === 'function')
+            {
+
+                started.catch(function () {});
+
+            }
+
+        });
+
+        player.addEventListener('play', function ()
+        {
+
+            playOverlay.remove();
+
+        }, { once: true });
+
+        introMediaSlot.appendChild(playOverlay);
+
+    }
 
 }
 

@@ -5517,6 +5517,169 @@ html.jsEnabled .processArrow.isResting
 
 }
 
+/* Both the video and its poster are 16:9 in a 16:9 slot, so cover and
+   contain currently resolve to the same rectangle and nothing of Chase
+   is cropped either way. The rule stays as a guard rather than a fix:
+   if a replacement recording or poster ever arrives at a different
+   ratio — a phone shooting 4:3, say — contain would pillarbox it and
+   the section would visibly change shape. Cover keeps the slot filled
+   whatever it is handed.
+
+   (This previously read as a fix for a 4:3 stand-in photograph. That
+   stand-in is gone; the poster is now a frame of the video itself.) */
+
+.introMediaSlot video
+{
+
+    object-fit: cover;
+
+}
+
+/* ── The play affordance ──
+
+   Chrome on the desktop draws no centred play button of its own; it
+   draws a control bar along the bottom edge and nothing else. A poster
+   frame of Chase standing in a field therefore reads as a photograph,
+   not as a video someone is meant to press. This is the button that
+   says "this plays".
+
+   It is a real <button> injected beside the player by
+   initializeIntroVideo(), it covers the whole frame so the poster
+   itself is the click target, and it removes itself the first time
+   playback starts — after which the native controls are unobstructed.
+
+   It is absolutely positioned inside .introMediaSlot, which already
+   owns the 16:9 box, so it occupies space that is reserved before
+   either it or the video exists. It cannot move the layout, and it
+   cannot contribute to CLS. ── */
+
+.introPlayOverlay
+{
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 100%;
+
+    height: 100%;
+
+    margin: 0;
+
+    padding: 0;
+
+    border: 0;
+
+    /* A very light scrim, not a redesign of the frame: enough to lift
+       the button off a bright sky without dimming Chase. */
+
+    background-color: rgba(16, 18, 20, 0.16);
+
+    cursor: pointer;
+
+    -webkit-appearance: none;
+
+    appearance: none;
+
+    transition: background-color 0.25s ease;
+
+}
+
+.introPlayOverlay:hover
+{
+
+    background-color: rgba(16, 18, 20, 0.26);
+
+}
+
+.introPlayIcon
+{
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 84px;
+
+    height: 84px;
+
+    border: 2px solid rgba(247, 249, 251, 0.88);
+
+    border-radius: 50%;
+
+    background-color: rgba(16, 18, 20, 0.58);
+
+    box-shadow: 0 6px 22px rgba(16, 18, 20, 0.42);
+
+    transition: transform 0.25s ease, background-color 0.25s ease;
+
+}
+
+/* The triangle, drawn with borders rather than an SVG so the button
+   carries no extra request and inherits colour changes for free. The
+   left margin optically centres it — a triangle centred by its
+   bounding box always looks pushed left. */
+
+.introPlayIcon::before
+{
+
+    content: "";
+
+    display: block;
+
+    margin-left: 6px;
+
+    border-style: solid;
+
+    border-width: 14px 0 14px 23px;
+
+    border-color: transparent transparent transparent var(--colorOffWhite);
+
+}
+
+.introPlayOverlay:hover .introPlayIcon,
+.introPlayOverlay:focus-visible .introPlayIcon
+{
+
+    transform: scale(1.07);
+
+    background-color: rgba(16, 18, 20, 0.72);
+
+}
+
+@media (max-width: 599px)
+{
+
+    .introPlayIcon
+    {
+
+        width: 64px;
+
+        height: 64px;
+
+    }
+
+    .introPlayIcon::before
+    {
+
+        margin-left: 5px;
+
+        border-width: 11px 0 11px 18px;
+
+    }
+
+}
+
 /* ── Owner media
 
    A real BlueGrid job photograph stands in the 16:9 frame until the
@@ -9091,6 +9254,27 @@ html.jsEnabled .consentInlineControl
     {
 
         scroll-behavior: auto;
+
+    }
+
+    /* ── The video play affordance ──
+       Same rule as the CTAs: the state change survives because it is
+       feedback, the travel goes. The button still darkens on hover and
+       focus; it just stops growing. */
+
+    .introPlayOverlay,
+    .introPlayIcon
+    {
+
+        transition: none;
+
+    }
+
+    .introPlayOverlay:hover .introPlayIcon,
+    .introPlayOverlay:focus-visible .introPlayIcon
+    {
+
+        transform: none;
 
     }
 

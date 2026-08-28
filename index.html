@@ -11,11 +11,11 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Forestry Mulching &amp; Land Clearing in OH &amp; KY | BlueGrid</title>
+    <title>Forestry Mulching &amp; Land Clearing in Scioto County, OH | BlueGrid</title>
 
     <meta
         name="description"
-        content="Owner-operated forestry mulching and land clearing across Southern Ohio and Eastern Kentucky. Brush, trails, storm cleanup. Free estimates, straight from the owner."
+        content="Owner-operated forestry mulching and land clearing based in Wheelersburg, Ohio. Serving Scioto County, the Portsmouth area, and all of Southern Ohio and Eastern Kentucky. Free estimates."
     >
 
     <link rel="canonical" href="https://bluegridlandsolutions.com/">
@@ -26,11 +26,11 @@
 
     <meta property="og:site_name" content="BlueGrid Land Solutions">
 
-    <meta property="og:title" content="Forestry Mulching &amp; Land Clearing | Southern Ohio &amp; Eastern Kentucky">
+    <meta property="og:title" content="Forestry Mulching &amp; Land Clearing | Scioto County &amp; Southern Ohio">
 
     <meta
         property="og:description"
-        content="Overgrown land, reclaimed. Owner-operated forestry mulching, land clearing, and storm cleanup across Southern Ohio and Eastern Kentucky. Free estimates, straight from the owner."
+        content="Overgrown land, reclaimed. Owner-operated forestry mulching and land clearing based in Wheelersburg, Ohio, serving Scioto County and all of Southern Ohio and Eastern Kentucky. Free estimates."
     >
 
     <meta property="og:url" content="https://bluegridlandsolutions.com/">
@@ -45,7 +45,7 @@
 
     <meta
         name="twitter:description"
-        content="Owner-operated forestry mulching and land clearing across Southern Ohio and Eastern Kentucky. Free estimates, straight from the owner."
+        content="Owner-operated forestry mulching and land clearing based in Wheelersburg, Ohio, serving Southern Ohio and Eastern Kentucky. Free estimates, straight from the owner."
     >
 
     <meta name="twitter:image" content="https://bluegridlandsolutions.com/graphics/images/excavator.webp">
@@ -146,8 +146,9 @@
     {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
+        "@id": "https://bluegridlandsolutions.com/#business",
         "name": "BlueGrid Land Solutions",
-        "description": "Owner-operated forestry mulching and land clearing company serving Southern Ohio and Eastern Kentucky.",
+        "description": "Owner-operated forestry mulching and land clearing company based in Wheelersburg, Ohio, serving Scioto County and the wider Southern Ohio and Eastern Kentucky region.",
         "founder": {
             "@type": "Person",
             "name": "Chase DeVore"
@@ -162,10 +163,21 @@
         ],
         "address": {
             "@type": "PostalAddress",
+            "addressLocality": "Wheelersburg",
             "addressRegion": "OH",
             "addressCountry": "US"
         },
         "areaServed": [
+            { "@type": "City", "name": "Wheelersburg, Ohio" },
+            { "@type": "City", "name": "Portsmouth, Ohio" },
+            { "@type": "City", "name": "Minford, Ohio" },
+            { "@type": "City", "name": "Piketon, Ohio" },
+            { "@type": "City", "name": "Jackson, Ohio" },
+            { "@type": "City", "name": "Chillicothe, Ohio" },
+            { "@type": "City", "name": "Ironton, Ohio" },
+            { "@type": "City", "name": "Ashland, Kentucky" },
+            { "@type": "City", "name": "Grayson, Kentucky" },
+            { "@type": "City", "name": "Morehead, Kentucky" },
             { "@type": "AdministrativeArea", "name": "Scioto County, Ohio" },
             { "@type": "AdministrativeArea", "name": "Pike County, Ohio" },
             { "@type": "AdministrativeArea", "name": "Jackson County, Ohio" },
@@ -281,7 +293,7 @@
                 "name": "Do you travel to my county?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "We work across Southern Ohio and Eastern Kentucky: Scioto, Pike, Jackson, Ross, Adams, Gallia, and Lawrence counties in Ohio, plus Boyd, Greenup, Carter, Lawrence, and Rowan counties in Kentucky. Not sure if we cover you? Ask. We regularly take on projects a county or two beyond the map."
+                    "text": "We are based in Wheelersburg, in Scioto County, and work across Southern Ohio and Eastern Kentucky: Scioto, Pike, Jackson, Ross, Adams, Gallia, and Lawrence counties in Ohio, plus Boyd, Greenup, Carter, Lawrence, and Rowan counties in Kentucky. Not sure if we cover you? Ask. We regularly take on projects a county or two beyond the map."
                 }
             }
         ]
@@ -1057,7 +1069,7 @@
 
                         </span>
 
-                        <span class="visuallyHidden">your property. Forestry mulching and land clearing in Southern Ohio and Eastern Kentucky.</span>
+                        <span class="visuallyHidden">your property. Forestry mulching and land clearing in Scioto County and across Southern Ohio and Eastern Kentucky.</span>
 
                     </h1>
 
@@ -1337,12 +1349,15 @@
         <!-- ============================================================
              OWNER INTRODUCTION SECTION
 
-             Video-ready. To publish Chase's introduction video, set
-             businessConfig.introVideoUrl in js/indexJS.js and flip
-             introVideoConfigured to true — the player is injected into
-             #introMediaSlot and replaces the fallback figure below.
-             Supports YouTube, Vimeo, and self-hosted files in
-             graphics/videos/. No markup changes required.
+             Chase's introduction video is LIVE. initializeIntroVideo()
+             in js/indexJS.js reads businessConfig.introVideoUrl and
+             injects the player into #introMediaSlot, replacing the
+             figure below. The source stays in graphics/videos/;
+             YouTube and Vimeo URLs would also work unchanged.
+
+             The figure below is NOT dead markup — it is what a visitor
+             with JavaScript disabled sees, and it is what holds the
+             frame if the injection ever fails. Leave it in place.
         ============================================================ -->
 
         <section class="introSection darkSection" id="meetTheOwner">
@@ -1367,11 +1382,15 @@
                         <div class="introMediaSlot" id="introMediaSlot">
 
                             <!--
-                                This frame holds a real BlueGrid job photograph. When the
-                                owner introduction media is supplied, initializeIntroVideo()
-                                in js/indexJS.js replaces this whole figure with the player
-                                — the 16:9 ratio is owned by .introMediaSlot, so the embed
-                                drops straight in and nothing here needs editing.
+                                initializeIntroVideo() in js/indexJS.js replaces this
+                                figure with Chase's video player at runtime — the 16:9
+                                ratio is owned by .introMediaSlot, so the player drops
+                                straight in, the box is already the right size before
+                                either exists, and nothing here needs editing.
+
+                                What remains is the no-JavaScript fallback. The same
+                                photograph is used as the player's interim poster, so
+                                both paths currently show the identical frame.
                             -->
                             <figure class="introMediaFigure">
 
@@ -1433,7 +1452,7 @@
                                     <path d="M12 21 C8 16.5 5 13 5 9.5 C5 5.9 8.1 3 12 3 C15.9 3 19 5.9 19 9.5 C19 13 16 16.5 12 21 Z M12 12 A2.5 2.5 0 1 0 12 7 A2.5 2.5 0 0 0 12 12 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
                                 </svg>
 
-                                <span><strong>Locally owned and operated.</strong> Based in the corridor we serve, not dispatched in from three states away.</span>
+                                <span><strong>Locally owned and operated.</strong> Based in Wheelersburg, Ohio — in the corridor we serve, not dispatched in from three states away.</span>
 
                             </li>
 
@@ -2265,8 +2284,9 @@
                 </h2>
 
                 <p class="sectionLede" data-animate="fadeUp" data-animatedelay="200">
-                    Explore the live map of our Southern Ohio and Eastern Kentucky service area.
-                    On the fence about distance? Ask anyway. We roam.
+                    Based in Wheelersburg in Scioto County, we cover Southern Ohio and
+                    Eastern Kentucky. Explore the live map. On the fence about distance?
+                    Ask anyway. We roam.
                 </p>
 
                 <div class="serviceAreaLayout">
@@ -2900,11 +2920,12 @@
 
                         <div class="faqPanel" id="faqPanel10" role="region" aria-labelledby="faqToggle10">
                             <p>
-                                We work across Southern Ohio and Eastern Kentucky: Scioto, Pike,
-                                Jackson, Ross, Adams, Gallia, and Lawrence counties in Ohio,
-                                plus Boyd, Greenup, Carter, Lawrence, and Rowan counties in
-                                Kentucky. Not sure if we cover you? Ask. We regularly take on
-                                projects a county or two beyond the map.
+                                We are based in Wheelersburg, in Scioto County, and work across
+                                Southern Ohio and Eastern Kentucky: Scioto, Pike, Jackson, Ross,
+                                Adams, Gallia, and Lawrence counties in Ohio, plus Boyd, Greenup,
+                                Carter, Lawrence, and Rowan counties in Kentucky. Not sure if we
+                                cover you? Ask. We regularly take on projects a county or two
+                                beyond the map.
                             </p>
                         </div>
 
@@ -3384,8 +3405,9 @@
                 >
 
                 <p class="footerOneLiner">
-                    Owner-operated forestry mulching and land clearing along the Ohio River
-                    corridor. When the storm clears, we're just getting started.
+                    Owner-operated forestry mulching and land clearing — based in
+                    Wheelersburg, Ohio, serving the Ohio River corridor. When the
+                    storm clears, we're just getting started.
                 </p>
 
                 <ul class="footerContactList">
@@ -3477,7 +3499,9 @@
                 <ul class="footerLinkList footerAreasList">
                     <li><a href="locations/forestry-mulching-portsmouth-oh.html">Portsmouth, OH</a></li>
                     <li><a href="locations/forestry-mulching-chillicothe-oh.html">Chillicothe, OH</a></li>
-                    <li>Jackson, OH</li>
+                    <li><a href="locations/forestry-mulching-minford-oh.html">Minford, OH</a></li>
+                    <li><a href="locations/forestry-mulching-piketon-oh.html">Piketon, OH</a></li>
+                    <li><a href="locations/forestry-mulching-jackson-oh.html">Jackson, OH</a></li>
                     <li>Waverly, OH</li>
                     <li><a href="locations/forestry-mulching-ironton-oh.html">Ironton, OH</a></li>
                     <li>Gallipolis, OH</li>

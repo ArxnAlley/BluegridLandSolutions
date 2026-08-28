@@ -1,6 +1,6 @@
 # Project State — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-27 (session closeout — footer legal row, favicon decision and restore, Apps Script deployment confirmed by Aron)
+**Last updated:** 2026-08-27 (second session — **owner introduction video shipped**, `_qa/` validators committed, video master archived and gitignored)
 **Repository:** `c:/Dev/NuloWorkspace/ClientSites/client_BluegridLandSolutions/`
 **Branch:** `main`
 **Remote:** `origin` → `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`
@@ -8,7 +8,61 @@
 **Last CODE commit:** `2080723` — "Footer links and devCredit fix" (author arxnalley). **34 files, +702 / −542** — the 33 pages plus `css/styleIndex.css`, carrying the footer legal-row restructure. Committed and pushed by Aron.
 **Closeout commit:** `d6f36cc` — "Session closeout: footer legal row, favicon decision, Apps Script deployed" (2026-08-27). **Docs only, local, unpushed.** HEAD is the small `docs:` commit recording this hash immediately after it — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
 **Sync:** `main` was **level with `origin/main`** before this closeout commit — verified with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
-**Working tree:** **clean apart from two untracked logo files** — `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept deliberately as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`. No tracked file is modified or deleted.
+**Working tree:** **NOT clean — the owner video work is complete, verified and uncommitted.** Three tracked files modified (`js/indexJS.js`, `css/styleIndex.css`, `.gitignore`), plus new untracked production assets in `graphics/videos/` and the new `_qa/` suite. Full classification in *Uncommitted Work* below. The two untracked logo files carried by previous closeouts are still there and still deliberate — `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`.
+
+## THE OWNER INTRODUCTION VIDEO IS LIVE — AND THE ROTATION WARNING WAS WRONG
+
+**Section 2 ships Chase's video.** Three closeouts carried the instruction that
+the file "arrives rotated 180 degrees and must be corrected before anything else
+is done with it." **That was wrong, and following it would have shipped him
+upside down.** The file carries a **-180 degree display matrix** — the pixels are
+stored inverted and every browser applies the matrix on playback. Re-encoding a
+rotation would have baked the fix into the pixels while leaving the matrix in
+place, inverting him twice.
+
+**Anyone replacing the video source must re-check this rather than assuming a
+rotation is needed.** It is asserted in QA against an ffmpeg-decoded reference.
+
+What ships, all in `graphics/videos/`:
+
+| File | What it is |
+|---|---|
+| `chaseIntro.web.mp4` | **8,742,071 B.** Lossless `-c copy -movflags +faststart` remux of the master — `moov` moved to the front. Video and audio bitstreams hash **identically** to the master's; nothing was re-encoded. |
+| `chaseIntro.poster.webp` | **640x360, 54,972 B, q88.** Frame **t=21.30s**, chosen on measurement — the sharpest his face gets in the whole 29.2s, mouth closed, square to camera. **58% lighter** than the 130,782 B excavator photograph it replaced. |
+| `chaseIntro.en.vtt` | **13 cues**, transcribed from his own audio by three models. Attached as an English captions `<track>` but **deliberately NOT defaulted on** — see *Waiting on Aron*. |
+| `IntroVideoFromChase.mp4` | The **9MB archival master. Gitignored and never committed.** Archived outside the repo — see *The video master* below. |
+
+**`preload="none"`: not one byte of the video is fetched until a visitor presses
+play.** Verified — 21 requests on initial load, none of them `.mp4` or `.vtt`.
+
+**A centred play affordance was added**, because Chrome desktop draws no middle
+play button and a poster of a man in a field otherwise reads as a photograph. It
+is a real `<button>` covering the frame, it removes itself on the `play` event,
+and it lives inside the slot that already owns the 16:9 box — **CLS 0.0008**.
+
+**`index.html` was not touched.** The injector did the whole job, exactly as
+`technicalDebt.md` item 13 predicted.
+
+### The video master
+
+`graphics/videos/IntroVideoFromChase.mp4` is **excluded from the repository** by
+an explicit `.gitignore` rule. Nothing on the site loads it; the site is served
+by GitHub Pages, so committing it would put 9MB permanently into Git history
+*and* make it publicly downloadable to serve a file no page references.
+
+- **Never committed** — `git log --all -- <path>` returns zero commits, so no
+  history rewrite is needed.
+- **Archived first, then ignored**, to
+  `ClientSites/_archive/client_BluegridLandSolutions/video/`, verified
+  byte-identical (MD5 `63f9fa5255a4840db6abbd29d5dfd950`), with a README
+  recording the codec facts and the display-matrix trap.
+- **The ignore rule names the single file on purpose.** Widening it to
+  `graphics/videos/` would exclude the three production assets beside it and
+  break Section 2. The rule carries that warning inline.
+- **`technicalDebt.md` item 52 records the trade-off:** the one irreplaceable
+  artifact in this project is now the one artifact version control is not
+  looking after, and the archive sits on the same disk as the working copy. **An
+  offsite copy is still owed.**
 
 ## THE GOOGLE-SIDE WORK IS DONE — THE PIPELINE AND THE REPO NOW AGREE
 
@@ -246,13 +300,47 @@ Every header dimension is a `:root` custom property overridden in the two header
 
 ---
 
-## Verification State — all green, re-run 2026-08-27 at closeout
+## Verification State — 90/90 in the NEW in-repo suite; the scratchpad suites were NOT run
 
-**29/29 suites pass. Zero failures.** The runner enumerates the scratchpad
-directory rather than trusting a remembered number, so this count is measured:
-**28 scratchpad suites — 26 `validate*`, 2 `simulate*` — plus the Apps Script
-harness at 180/180.** One validator is new this session, so the comparable
-figure before it was 27 + harness.
+**READ THIS CAREFULLY, BECAUSE TWO DIFFERENT TEST SETS ARE NOW IN PLAY.**
+
+**1. `_qa/` — new, in the repository, and it ran: 90/90.**
+
+```
+node _qa/runAll.js
+```
+
+- `verifyIntroVideo.js` — **56/56.** Loading cost, playback from a genuine click
+  with no autoplay-policy override, orientation against an ffmpeg reference,
+  captions, the play affordance, and responsiveness at 1440/768/390.
+- `regressionPages.js` — **34/34.** All **33 pages** discovered by walking the
+  repo: every one returns 200 with exactly one `h1`, zero console and page
+  errors, no video bytes pulled, and **every asset every page requests
+  resolves** — proven by recording each 404 the server actually serves rather
+  than by trusting `fs.existsSync`, which hides casing bugs on Windows.
+
+This is the **first validation infrastructure this project has ever
+version-controlled**, and it partially addresses `technicalDebt.md` item 10i.
+
+**2. The 28 scratchpad suites — NOT CARRIED FORWARD, NOT RUN.**
+
+They were not present in this session's scratchpad and were not recovered.
+**`validateAssets`, `validateSeo`, `validateResponsiveImages`,
+`validateFooterLegalRow` and the rest have not been run against the current
+working tree.** The `_qa/` suite overlaps them only partly — it does check that
+every requested asset resolves, which is `validateAssets`'s core job, but it does
+not cover SEO intent, schema contracts, the responsive-image ladder, or the
+footer legal row.
+
+**Do not read "90/90" as "everything passes".** It means the new suite passes.
+Item 10i remains open and is now the clearest blocker to this repository being
+genuinely self-checking.
+
+**Also verified this session:** `node --check` clean on `js/indexJS.js`; CSS
+braces balanced **679/679** in `styleIndex.css`; the video master re-verified
+byte-identical by MD5.
+
+### The historical scratchpad count, kept for reference
 
 **Counting note, because the last three closeouts disagreed with each other.**
 "28 validator suites + harness = 29/29" was recorded on 2026-08-21, which does
@@ -572,14 +660,62 @@ Created `docs/sessionCloseout.md` — a local, gitignored workflow document inst
 
 ## Currently In Progress
 
-**One thing, and it is blocked on Chase, not on us: the owner intro video.**
-Section 2 still ships the designed placeholder. Nothing has been built for the
-video this session because the file does not exist yet — see *NEXT SESSION
-SHOULD START HERE* for the exact sequence once it arrives.
+**Nothing is in flight.** The owner introduction video — the single item the last
+three closeouts were waiting on — is built, verified and **uncommitted**. The
+next task is a new one: the geographic SEO audit.
 
-Everything else is committed and pushed. The working tree holds no tracked
-modifications; the only untracked files are two logos in `graphics/logos/`,
-both deliberate.
+### Uncommitted Work — every file, classified
+
+**Modified (tracked) — COMMIT (7):**
+
+| File | Why |
+|---|---|
+| `js/indexJS.js` | Video source, poster and captions config; caption `<track>` injection; play-affordance injection; `preload` rationale rewritten now that `moov` is at the front. |
+| `css/styleIndex.css` | Play-affordance styles, reduced-motion guard, and a corrected comment — the `object-fit: cover` rule's stated reason (a 4:3 stand-in poster) no longer held once the poster became a 16:9 video frame. |
+| `index.html` | **Comment text only — no markup change.** The section comment was rewritten from "video-ready, here is how to activate it" to "the video is live, the figure below is the no-JS fallback, leave it alone." Carried from the first video session, not touched in the closeout. |
+| `.gitignore` | Excludes the video master and `_qa/node_modules/`. |
+| `docs/projectState.md` | This file. |
+| `docs/engineeringJournal.md` | New top entry for the video session. |
+| `docs/technicalDebt.md` | Item 13 closed, item 10i partially addressed, items 52–55 opened. |
+
+**New (untracked) — COMMIT (11):**
+
+| Path | Why |
+|---|---|
+| `graphics/videos/chaseIntro.web.mp4` | Production video. Referenced by `js/indexJS.js`. |
+| `graphics/videos/chaseIntro.poster.webp` | Production poster. Referenced by `js/indexJS.js`. |
+| `graphics/videos/chaseIntro.en.vtt` | Production captions. Referenced by `js/indexJS.js`. |
+| `_qa/runAll.js` | Suite entry point. |
+| `_qa/rangeServer.js` | Range-capable static server. Read its header before testing media. |
+| `_qa/verifyIntroVideo.js` | 56 checks over the owner video. |
+| `_qa/regressionPages.js` | 34 checks over all 33 pages. |
+| `_qa/lib/harness.js` | Chrome discovery, reporting, orientation reference. |
+| `_qa/package.json` | Declares the one dependency, `puppeteer-core`. |
+| `_qa/package-lock.json` | Pins it. |
+| `_qa/README.md` | How to run it, and why the folder name starts with an underscore. |
+
+**New (untracked) — IGNORE (already ignored, listed so nobody re-adds them):**
+
+| Path | Why |
+|---|---|
+| `graphics/videos/IntroVideoFromChase.mp4` | 9MB master, archived outside the repo. See above. |
+| `_qa/node_modules/` | `puppeteer-core`, restored by `npm install --prefix _qa`. |
+
+**Pre-existing and unchanged — still an open decision, not this session's work:**
+
+| Path | Status |
+|---|---|
+| `graphics/logos/masterFavicon_BG.png` | Kept deliberately as an alternate logo concept to show Chase. Not an approved favicon. |
+| `graphics/logos/TPname.png` | Carried untracked by previous closeouts. **Nobody has recorded what this file is for.** Worth resolving. |
+
+**No scratch, debug, screenshot or experiment file is anywhere in the working
+tree.** All throwaway tooling from this session stayed in the session scratchpad
+and was deliberately not preserved — see `_qa/README.md`, *Deliberately not
+preserved*.
+
+> **DO NOT `git add -A` BLINDLY.** It would sweep in the two undecided logo
+> files along with everything else. Stage the 18 intended paths explicitly, or
+> add the logos to `.gitignore` first if they are meant to stay local.
 
 **What has and has not been seen in a browser** — still the honest distinction,
 and it is now better than it was:
@@ -708,8 +844,11 @@ in the same uncommitted tree:
 - **Price ranges.** `seoPlan.md` calls cost transparency the biggest opening in this trade. No page quotes a dollar figure because none has been approved. **Rough per-acre or per-day ranges are the single highest-value upgrade available to the location pages** and cost one conversation.
 - **Confirm Rowan County / Morehead coverage.** If Chase does not work Rowan County, the Morehead page and all four data entries come back out.
 - **Real project photos** — ideally before/after pairs per service, tagged by location. Would unlock galleries on all 6 location pages and replace the Insights placeholders.
-- **THE OWNER INTRO VIDEO — he has one and is emailing the original file.** This is the single most actionable item on the list and the next session's first task. **The file arrives rotated 180 degrees** and must be corrected before anything else is done with it. Section 2 still ships the designed placeholder. The section is video-ready through two config fields, `introVideoUrl` + `introVideoConfigured`. Full sequence in *NEXT SESSION SHOULD START HERE*.
-- **A better owner intro can replace it later.** The incoming file is what Chase can record today; a higher-quality version is expected once better recording equipment is available. Build the video path so swapping the source is a config change, not a rebuild.
+- ~~**THE OWNER INTRO VIDEO**~~ — **RECEIVED AND SHIPPED 2026-08-27.** Section 2 plays his recording. The "arrives rotated 180 degrees" warning carried by three closeouts was **wrong** — it carries a display matrix the browser applies, and correcting it would have inverted him twice. See the video section near the top of this file.
+- **NEW — two things about the video now need Chase:**
+  - **May we name him in the captions and the player's accessible name?** Both currently say "Chase DeVore". The section heading already reads "Meet Chase DeVore, the owner behind BlueGrid", so this is consistent with what already shipped — but it is worth a confirmation, and it sits alongside the older "may we name Chase on the site?" question below.
+  - **Approve the caption wording**, transcribed from his own audio. Full text in the 2026-08-27 journal entry. Includes **"bush hogging"**, which is what he says; the site's own copy says "brush hogging". Aron has ruled it stays as spoken.
+- **A better owner intro can still replace it later.** The current file is what Chase could record that day; a higher-quality version is expected once better equipment is available. **Swapping the source is one config line, but the poster and the captions are welded to this take** — `chaseIntro.poster.webp` is a frame of it and every VTT timestamp refers to its audio. Both must be regenerated. Recorded as `technicalDebt.md` item 55.
 - **An alternate logo concept is waiting to be shown to him.** `graphics/logos/masterFavicon_BG.png` is the circular BLUEGRID wordmark mark. It was **rejected as a favicon** on measurement (`technicalDebt.md` item 39) but kept deliberately as a possible alternate logo to put in front of Chase. **It is not an approved production favicon and must not be used as one.**
 - **Badge artwork typo** — the official badge reads **"FORESTRV"**, not "FORESTRY". Off the website since 2026-08-11 (`technicalDebt.md` item 2); still wrong on any print/signage that uses the old artwork.
 - ~~**Confirm phone** `(740) 464-2526`~~ — **confirmed 2026-08-13**, printed on his own advertisement (`graphics/images/whatTheyDo2.jpg`).
@@ -747,6 +886,23 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 **Still genuinely open:**
 
+- **NEW — decide whether to commit the video work.** It is finished, verified
+  90/90, and deliberately left uncommitted. Every file and its classification is
+  in *Uncommitted Work* above. Nothing else should be built on top of it until
+  this is settled.
+- **NEW — sign off the caption wording**, or send it to Chase. Until then the
+  track stays attached but not defaulted on, which is the deliberate current
+  state. Enabling it is one line. Full transcript in the 2026-08-27 journal
+  entry.
+- **NEW — make an offsite copy of the video master.** It is now gitignored, so
+  Git is no longer protecting it, and the archive at
+  `ClientSites/_archive/client_BluegridLandSolutions/video/` is on the same
+  machine and the same disk as the working copy. It protects against a bad
+  `git clean`, not against drive failure. `technicalDebt.md` item 52.
+- **NEW — decide what `graphics/logos/TPname.png` is.** It has been carried
+  untracked through several closeouts and **no document records what it is for.**
+  Commit it, ignore it, or delete it.
+
 - **Decide the homepage geographic target.** An audit was delivered 2026-08-15
   recommending the homepage stay regional; Aron has neither accepted nor
   rejected it. See *Open Decisions* below.
@@ -780,89 +936,88 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 ## NEXT SESSION SHOULD START HERE
 
-**There is exactly one real task queued, and it is gated on a file Chase is
-emailing: the owner introduction video.** Everything else in this repository is
-committed, pushed and validated, and the Google-side work is finished.
+**The video is done. The next major task is the GEOGRAPHIC SEO AUDIT.**
 
-1. **Read `CLAUDE.md`, then this file, then `engineeringJournal.md` and
-   `technicalDebt.md`.** The repository is authoritative — correct stale
+Before anything else, note that **the working tree is dirty and the work in it is
+finished and verified** — see *Uncommitted Work* above for every file and how it
+should be classified. It was left uncommitted deliberately, at Aron's
+instruction. **Decide whether to commit it before starting new work; do not
+start the audit on top of an unreviewed tree.**
+
+1. **Read `CLAUDE.md`, then this file, then `engineeringJournal.md` (top entry)
+   and `technicalDebt.md`.** The repository is authoritative — correct stale
    documentation rather than carrying it forward. **Commit hashes recorded
-   before 2026-08-15 no longer resolve.**
+   before 2026-08-15 no longer resolve.** And note the lesson from this session:
+   a warning carried across three closeouts ("the video arrives rotated 180
+   degrees") turned out to be wrong, and ninety seconds of `ffprobe` beat three
+   sessions of notes.
 
-2. **Verify Git state.** Expect `main`, and a working tree clean apart from two
-   deliberate untracked files in `graphics/logos/`
-   (`masterFavicon_BG.png`, `TPname.png`). Expect level with `origin/main`
-   apart from this closeout's docs commit (local, unpushed). Check both
-   directions with `git fetch` + `git rev-list --left-right --count
-   origin/main...HEAD`. **If a tracked file is dirty, someone worked between
-   sessions — find out what before proceeding.**
+2. **Verify Git state.** `git fetch` + `git rev-list --left-right --count
+   origin/main...HEAD` in both directions. Expect `main`, and the uncommitted
+   video and `_qa/` work described above.
 
-3. **THE FIRST TASK: Chase's intro video, once the file arrives.** Do not start
-   any of it before the file exists — there is nothing to prepare in advance,
-   and the section already ships a designed placeholder.
+3. **Establish a baseline before changing anything:**
 
-   Where everything lives:
+   ```
+   npm install --prefix _qa     # once, if node_modules is absent
+   node _qa/runAll.js           # expect 90/90
+   ```
 
-   | Piece | Location |
-   |---|---|
-   | Section | `index.html`, `<section id="meetTheOwner">` — "Owner Introduction Section" |
-   | Slot the player replaces | `#introMediaSlot` |
-   | Injector | `initializeIntroVideo()` in `js/indexJS.js` |
-   | Config | `businessConfig.introVideoUrl`, `.introVideoConfigured`, `.introVideoPoster` |
-   | Self-hosted destination | `graphics/videos/` — currently empty |
+   This is new and it is in the repository — it does not need locating in a
+   scratchpad. **The 28 older validator suites still do**, and they were not run
+   this session (item 10i). If they can be recovered, recover them and run them
+   too; that is the honest baseline.
 
-   The sequence, in order:
+4. **THE MAIN TASK: the geographic SEO audit.**
 
-   1. **Rotate it 180 degrees.** The original is upside down. This is the first
-      step and everything after it depends on it — do not optimise, poster, or
-      publish an unrotated file.
-   2. **Assess and optimise for web.** Check duration, dimensions, bitrate,
-      codec and audio before deciding anything. Aim for a self-hosted MP4
-      (H.264 + AAC, `faststart`) unless the file is large enough that a
-      YouTube or Vimeo embed is the better answer — the injector supports all
-      three and needs no markup change either way.
-   3. **Create poster media if needed.** `introVideoPoster` currently points at
-      `graphics/images/excavator2_PiketonOH.webp`. A frame from the video is
-      usually the better poster; generate one only if it beats the photo.
-   4. **Replace the Section 2 placeholder** by setting `introVideoUrl` and
-      flipping `introVideoConfigured` to `true`. **No markup changes are
-      required** — that is what the injector exists for. If you find yourself
-      editing `index.html`, stop and re-read `initializeIntroVideo()`.
-   5. **Targeted QA, not a full sweep.** Homepage only, in a real browser: the
-      player renders in `#introMediaSlot`, controls work, the poster shows
-      before play, nothing overflows at 1440 / 768 / 390, and reduced motion
-      is respected. Then run the full suite — `validateAssets` will catch a
-      mistyped path and `validateResponsiveImages` will notice a new poster.
-   6. **Commit, push and deploy** as needed. Publishing the video is a
-      front-end-only change; it does not touch Apps Script.
+   **There is an unresolved decision waiting at the front of it.** *Open
+   Decisions* item 1 records an audit delivered 2026-08-15 recommending the
+   homepage stay **regional** rather than target Wheelersburg specifically.
+   **Aron has neither accepted nor rejected it.** Settle that first — the rest
+   of the geographic work depends on which way it goes.
 
-   **A better recording is expected later.** Chase's current file is what he can
-   record today; higher-quality equipment is coming. Keep the swap a config
-   change so replacing it costs one line.
+   **And a hard constraint on the whole exercise, from *Open Decisions* item 2:**
+   **no search-volume, keyword-difficulty or competitor data exists anywhere in
+   this repository.** The only prioritisation rationale ever recorded is one
+   unquantified line in `seoPlan.md`. Every geographic decision to date has been
+   made without it. Either gather that data or state plainly that the audit is
+   reasoning from site structure alone — do not let it look quantified when it
+   is not.
 
-4. **Then the Chase review.** He has still never seen the site end to end.
-   Expect it to generate its own list of changes.
+   Known territory the audit has to cover:
 
-5. **If the video has not arrived**, the ranked code candidates are in
-   `technicalDebt.md`: performance items M1 (self-host the two Google fonts,
-   ~1.7s of render-blocking on simulated mobile) and M2 (two Unsplash hotlinks,
-   483 KB on desktop), then the tree/brush-clearing service page (item 3b),
-   then location pages 7–11.
+   - **West Union, OH and Flatwoods, KY are advertised in the nav but appear
+     nowhere in `seoPlan.md`'s 11-city table, and have no pages.** Give them
+     pages or take them out of the nav. Open since the location-pages session.
+   - **9 location pages exist**; `seoPlan.md` lists 11 cities.
+   - **Portsmouth already claims Wheelersburg** in copy *and* FAQ schema.
+   - `LocalBusiness` declares **12 counties with no address**.
+   - Item 10k: `Service` schema uses an inline provider stub on 13 pages instead
+     of an `@id` reference — deliberately deferred to the domain sweep.
+
+5. **Then the Chase review.** He has still never seen the site end to end.
+   Expect it to generate its own list.
 
 6. **External, client-side, and not repository work:** Google Business Profile
-   verification and the Bing Places postcard/PIN. Both were still unresolved at
-   this closeout. Neither blocks anything in the codebase.
+   verification and the Bing Places postcard/PIN. Both still unresolved. Neither
+   blocks anything in the codebase.
 
-7. **The validator toolchain is still not in the repository** —
-   `technicalDebt.md` item 10i. **28 scratchpad suites** as of 2026-08-27
-   (26 `validate*`, 2 `simulate*`) plus the Apps Script harness. It cost three
-   suite failures again this session because only the `*.js` files were carried
-   forward and `fonts/` was left behind. **Copy the whole scratchpad
-   directory**, then re-run everything to establish a baseline before changing
-   anything.
+7. **Two things need a human, not a session** — both recorded under *Waiting on
+   Aron*: signing off the caption wording, and an offsite copy of the video
+   master.
 
 ### Do NOT redo any of this
 
+- **The owner introduction video is finished and must not be rebuilt.** The
+  faststart remux, the t=21.30s poster, the play affordance and the caption
+  track are approved. **Do not re-encode the video to "fix" the rotation** — it
+  carries a -180 display matrix the browser applies, and re-encoding would
+  invert Chase twice. Do not move the poster into `graphics/images/`; a poster
+  has no `srcset` siblings. Do not enable captions by default until the wording
+  is signed off.
+- **Do not re-derive the poster choice.** Six candidate frames were measured on
+  face sharpness and the numbers are in the journal entry. `21.30s` won on
+  measurement, not taste.
 - **The Google-side work is finished.** Config emails confirmed, `config.gs`
   and `validation.gs` pasted, deployment updated with New version. Three
   closeouts carried this as the P0. It is done.
