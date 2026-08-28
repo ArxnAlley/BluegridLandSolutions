@@ -8168,7 +8168,41 @@ html.jsEnabled .consentInlineControl
     .heroKicker
     {
 
-        margin-bottom: 2.4rem;
+        margin-bottom: 1.8rem;
+
+    }
+
+    /* +5px on top of the existing clamp, not a new curve -- both the
+       fixed hook and the typed line get the same flat increase so
+       they grow together and their line-height ratio to their own
+       font-size (0.96, untouched) still lines them up the same way.
+
+       The 5px adds ~4.8px to each line's rendered height (0.96 x 5px),
+       9.6px combined since the two lines carry no margin between them
+       -- exactly what .heroHeadline's margin-bottom below gives back,
+       so nothing after the headline shifts. Below 640px the separate
+       override further down still wins the cascade (it is declared
+       later in the file), so this never reaches that narrower step. */
+
+    .heroHeadlineFixed
+    {
+
+        font-size: calc(clamp(3.2rem, 6.8vw, 5.6rem) + 5px);
+
+    }
+
+    .heroTypedGhost,
+    .heroTypedText
+    {
+
+        font-size: calc(clamp(2.6rem, 5.6vw, 4.6rem) + 5px);
+
+    }
+
+    .heroHeadline
+    {
+
+        margin-bottom: 0.8rem;
 
     }
 
@@ -8326,6 +8360,32 @@ html.jsEnabled .consentInlineControl
         justify-content: space-between;
 
         min-height: calc(var(--heroMediaHeight) - var(--headerHeight) - 3rem);
+
+    }
+
+    /* Pulls the stats' own margin box up from .heroContent's bottom
+       edge, since justify-content: space-between otherwise sits the
+       last item's edge flush against it. Only this group moves —
+       space-between still owns the distribution above it. */
+
+    .heroStats
+    {
+
+        margin-bottom: 0.75rem;
+
+    }
+
+    /* Same 2rem total as the base rule's `margin: 0 0 2rem`, just
+       redistributed between the two sides -- the item's own margin-box
+       height, and so its contribution to the space-between free-space
+       pool, is unchanged. This shifts .heroCopy's rendered text down
+       into what was the top half of that gap, without moving the
+       headline above it or the CTA row after it. */
+
+    .heroCopy
+    {
+
+        margin: 1rem 0;
 
     }
 
@@ -8715,6 +8775,20 @@ html.jsEnabled .consentInlineControl
         --headerBadgeSize: 50px;
 
         --headerBrandNameSize: 1.35rem;
+
+    }
+
+    /* Undoes the 1080px block's +0.6rem-smaller margin-bottom, which
+       only exists there to offset the +5px headline/typed-line growth
+       added at that width. This block's own font-size rules below are
+       the original, unenlarged sizing, so the original 1.4rem margin
+       belongs with them -- otherwise the 1080px override would bleed
+       into this narrower step it was never meant to touch. */
+
+    .heroHeadline
+    {
+
+        margin-bottom: 1.4rem;
 
     }
 
@@ -9440,7 +9514,20 @@ html.jsEnabled .consentInlineControl
     .heroStats
     {
 
-        gap: 0.25rem;
+        gap: 0.2rem;
+
+    }
+
+    /* Labels only, not the numbers -- 0.14em of letter-spacing is
+       most of what "TURNAROUND" and "COUNTIES SERVED" needed beyond
+       their own characters, and it is the one dimension here that
+       does not touch font-size. Frees just enough width to stop the
+       three columns' labels colliding at the narrowest widths. */
+
+    .heroStat dt
+    {
+
+        letter-spacing: 0.08em;
 
     }
 
