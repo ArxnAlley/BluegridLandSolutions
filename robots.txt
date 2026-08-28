@@ -1,9 +1,11 @@
 # BlueGrid Land Solutions
 #
 # Everything on this site is intended to be crawlable. There is no
-# admin area, no login, and no staging path to exclude.
+# admin area, no login, and no staging path. /_qa/ is the site's own
+# browser test harness, not content, so it is excluded below.
 
 User-agent: *
 Allow: /
+Disallow: /_qa/
 
 Sitemap: https://bluegridlandsolutions.com/sitemap.xml
