@@ -8160,6 +8160,18 @@ html.jsEnabled .consentInlineControl
 @media (max-width: 1080px)
 {
 
+    /* Pushes the headline (and, through normal flow, everything after
+       it — subtext, CTAs, address field, stats) down from the eyebrow,
+       which keeps its own position. Same margin-bottom shorthand the
+       base rule already uses, just a larger value at this width. */
+
+    .heroKicker
+    {
+
+        margin-bottom: 2.4rem;
+
+    }
+
     /* ── Hero background decoupled from the estimate card ──
        .heroInner collapses to one column at this breakpoint, so the
        estimate card stacks underneath the hero copy. .heroMedia was
@@ -8284,8 +8296,34 @@ html.jsEnabled .consentInlineControl
        This is the min-height that used to live on .heroSection — it
        belongs on the block it actually describes. */
 
+    /* The min-height above reserves the whole media band, but as a
+       block box every child stacked at the top and the entire
+       remainder pooled below the last one. A column flex box with
+       space-between spreads that same remainder across the FOUR gaps
+       between the five visible groups instead — eyebrow, headline,
+       subtext, the CTA/address row, stats — rather than banking it
+       all in one place.
+
+       space-between and not an auto margin for exactly that reason:
+       an auto margin claims the whole surplus for a single gap, which
+       is the dead-space result this replaces. First and last items
+       keep their own edges, so the eyebrow does not move and the
+       stats land at the bottom of this box — which stops short of the
+       band by the section's own padding, so they keep their clearance.
+
+       Each existing margin-bottom survives as that gap's minimum; the
+       distribution is added on top. When the copy is tall enough to
+       fill the box there is no surplus, and this lays out exactly as
+       it does today. */
+
     .heroContent
     {
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content: space-between;
 
         min-height: calc(var(--heroMediaHeight) - var(--headerHeight) - 3rem);
 
