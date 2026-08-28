@@ -1,6 +1,6 @@
 # Project State — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-27 (second session — **owner introduction video shipped**, `_qa/` validators committed, video master archived and gitignored)
+**Last updated:** 2026-08-28 (launch day — **geographic SEO + video committed and pushed as `e380746`**, site deployed to **Netlify**, responsive conversion UX corrected locally and not yet committed)
 **Repository:** `c:/Dev/NuloWorkspace/ClientSites/client_BluegridLandSolutions/`
 **Branch:** `main`
 **Remote:** `origin` → `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`
@@ -8,7 +8,9 @@
 **Last CODE commit:** `2080723` — "Footer links and devCredit fix" (author arxnalley). **34 files, +702 / −542** — the 33 pages plus `css/styleIndex.css`, carrying the footer legal-row restructure. Committed and pushed by Aron.
 **Closeout commit:** `d6f36cc` — "Session closeout: footer legal row, favicon decision, Apps Script deployed" (2026-08-27). **Docs only, local, unpushed.** HEAD is the small `docs:` commit recording this hash immediately after it — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
 **Sync:** `main` was **level with `origin/main`** before this closeout commit — verified with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
-**Working tree:** **NOT clean — the owner video work is complete, verified and uncommitted.** Three tracked files modified (`js/indexJS.js`, `css/styleIndex.css`, `.gitignore`), plus new untracked production assets in `graphics/videos/` and the new `_qa/` suite. Full classification in *Uncommitted Work* below. The two untracked logo files carried by previous closeouts are still there and still deliberate — `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`.
+**HEAD:** `e380746` — "Prepare BlueGrid production launch". **50 files, +3357 / −421.** Committed *and pushed* by Aron on 2026-08-28; `git rev-list --left-right --count origin/main...HEAD` returns `0 0`, so `main` and `origin/main` agree. This is the commit that carried the geographic SEO architecture, the Chase intro video, and the `_qa/` suite.
+
+**Working tree:** **NOT clean, and deliberately so.** Three tracked files hold the responsive conversion-UX correction, finished and verified but **not committed** — `css/styleIndex.css`, `index.html`, `js/indexJS.js`. Full detail in *Uncommitted Work* below. Plus the two long-standing untracked logo files, still neither tracked nor ignored: `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`. **Both remain a `git add -A` hazard.**
 
 ## THE OWNER INTRODUCTION VIDEO IS LIVE — AND THE ROTATION WARNING WAS WRONG
 
@@ -101,23 +103,38 @@ What went live in that commit, all of it previously staged-but-unshipped:
 
 **Also verified at closeout:** `graphics/marketingAssets/` was correctly excluded by `.gitignore` — zero marketing PNGs are in `90f10ec`, and all six are still on disk locally. `docs/sessionCloseout.md` remains untracked.
 
-## Hosting — decided and recorded 2026-08-18
+## Hosting — MIGRATED TO NETLIFY 2026-08-28, DNS NOT YET SWITCHED
 
-**This site is hosted on GitHub Pages, and that is the intended host.** The
-evidence is in the repository: a `CNAME` file (the Pages custom-domain
-mechanism) and no Netlify configuration of any kind — no `netlify.toml`, no
-`_redirects`, no `_headers`.
+**The host changed on launch day.** `main` is deployed to Netlify, project
+`bluegrid-land-solutions`, and the Netlify preview is confirmed operational.
+**Reported by Aron and not verifiable from this repository** — recorded as his
+report, per the closeout rules.
 
-Two behaviours the rest of this document depends on:
+**DNS still points at GitHub Pages.** `bluegridlandsolutions.com` has not been
+moved and Aron has said explicitly not to move it yet. The Namecheap records
+are replaced with Netlify's as step 7 of the launch sequence.
 
-- **`www` → apex is handled by Pages**, not by a config file. Verified live.
-  If the host is ever changed, that redirect must be reimplemented or every
-  canonical on the site starts disagreeing with the served URL.
-- **`404.html` is served for a miss at any depth *without* a redirect**, with
-  the browser's base URL still pointing at the missing directory. This is why
-  every path in `404.html` is root-absolute and must stay that way.
+**The repository still looks like a Pages site**, and that is now a mismatch
+worth knowing about rather than a fact to rely on: `CNAME` is still present,
+and there is **no `netlify.toml`, no `_redirects`, no `_headers`** — verified
+2026-08-28.
 
-**No migration is planned or in progress.**
+**Three Pages behaviours the rest of this document assumed, which Netlify does
+not inherit for free:**
+
+- **`www` → apex was handled by Pages**, not by a config file. On Netlify it
+  must be configured in the domain settings, or every canonical on the site
+  starts disagreeing with the served URL. This is step 8 of the launch
+  sequence and it is not optional.
+- **`404.html` was served for a miss at any depth *without* a redirect**, with
+  the browser's base URL still pointing at the missing directory. That is why
+  every path in `404.html` is root-absolute. Netlify also serves `404.html`,
+  but **the depth behaviour has not been re-verified on Netlify** — worth one
+  request to a deep bad path before launch.
+- **Jekyll ran on Pages and excluded `_`-prefixed directories.** Netlify does
+  not run Jekyll. `_qa/` is therefore **publicly served** on Netlify, which is
+  the opposite of what `_qa/README.md` and `technicalDebt.md` item 53 describe.
+  See item 53 — it is now a live condition, not a theory.
 
 ## THE SITE IS LIVE
 
@@ -304,7 +321,7 @@ Every header dimension is a `:root` custom property overridden in the two header
 
 **READ THIS CAREFULLY, BECAUSE TWO DIFFERENT TEST SETS ARE NOW IN PLAY.**
 
-**1. `_qa/` — new, in the repository, and it ran: 90/90.**
+**1. `_qa/` — in the repository, and it ran: 90/90.**
 
 ```
 node _qa/runAll.js
@@ -321,6 +338,24 @@ node _qa/runAll.js
 
 This is the **first validation infrastructure this project has ever
 version-controlled**, and it partially addresses `technicalDebt.md` item 10i.
+It is now committed, as part of `e380746`.
+
+**1b. A targeted responsive suite ran too: 216/216.** Written for the
+conversion-UX correction and kept in the session scratchpad rather than the
+repo, because it asserts one change rather than a standing contract. It drove
+the burger widths **1200 / 1080 / 1024 / 900 / 768 / 712 / 640 / 430 / 390 /
+375** and the narrow header widths **375 / 360 / 344 / 324 / 320**, checking on
+each: burger mode active, no header chip, bar hidden while the hero is in view,
+hero row 1 side-by-side, address field below and full width, 44px targets, the
+form still owning its input and button, bar appears after the hero leaves,
+`tel:` and `#estimateForm` both correct, bar hides again on return, hamburger
+opens *and* closes, no header overflow, zero console errors. At 324px the gap
+between wordmark and hamburger measured **42.9px** with the wordmark unclipped.
+
+**It caught a real defect during implementation**: the bottom-bar rules were
+first inserted at brace depth 2, nested inside another media query, which left
+the bar `display: none` at 1200px. Without the suite that ships silently as
+"the bar does not work on tablets".
 
 **2. The 28 scratchpad suites — NOT CARRIED FORWARD, NOT RUN.**
 
@@ -664,58 +699,49 @@ Created `docs/sessionCloseout.md` — a local, gitignored workflow document inst
 three closeouts were waiting on — is built, verified and **uncommitted**. The
 next task is a new one: the geographic SEO audit.
 
-### Uncommitted Work — every file, classified
+### Uncommitted Work — the responsive conversion UX correction
 
-**Modified (tracked) — COMMIT (7):**
+**Everything from the previous session is committed and pushed** as `e380746`.
+What remains in the tree is one focused change, made after the Netlify deploy
+exposed a conversion gap on tablets, verified 216/216 in a real browser and
+left uncommitted at Aron's instruction.
+
+**Modified (tracked) — COMMIT (3):**
 
 | File | Why |
 |---|---|
-| `js/indexJS.js` | Video source, poster and captions config; caption `<track>` injection; play-affordance injection; `preload` rationale rewritten now that `moov` is at the front. |
-| `css/styleIndex.css` | Play-affordance styles, reduced-motion guard, and a corrected comment — the `object-fit: cover` rule's stated reason (a 4:3 stand-in poster) no longer held once the poster became a 16:9 video frame. |
-| `index.html` | **Comment text only — no markup change.** The section comment was rewritten from "video-ready, here is how to activate it" to "the video is live, the figure below is the no-JS fallback, leave it alone." Carried from the first video session, not touched in the closeout. |
-| `.gitignore` | Excludes the video master and `_qa/node_modules/`. |
-| `docs/projectState.md` | This file. |
-| `docs/engineeringJournal.md` | New top entry for the video session. |
-| `docs/technicalDebt.md` | Item 13 closed, item 10i partially addressed, items 52–55 opened. |
+| `css/styleIndex.css` | Header phone chip re-hidden in burger mode; the bottom action bar moved out of the 640px block into a top-level `@media (max-width: 1200px)`; hero compact row rebuilt as a 2-column grid; button padding reduced below 430px. |
+| `index.html` | Removed the redundant `Get My Free Estimate` hero button. `See Transformations` is now the hero's single content-side CTA. |
+| `js/indexJS.js` | `mobileActionMediaQuery` 640px → 1200px; bar visibility retied from "header hid on scroll" to "hero has left the viewport". |
 
-**New (untracked) — COMMIT (11):**
+**Untracked — MUST STAY OUT (2):**
 
-| Path | Why |
-|---|---|
-| `graphics/videos/chaseIntro.web.mp4` | Production video. Referenced by `js/indexJS.js`. |
-| `graphics/videos/chaseIntro.poster.webp` | Production poster. Referenced by `js/indexJS.js`. |
-| `graphics/videos/chaseIntro.en.vtt` | Production captions. Referenced by `js/indexJS.js`. |
-| `_qa/runAll.js` | Suite entry point. |
-| `_qa/rangeServer.js` | Range-capable static server. Read its header before testing media. |
-| `_qa/verifyIntroVideo.js` | 56 checks over the owner video. |
-| `_qa/regressionPages.js` | 34 checks over all 33 pages. |
-| `_qa/lib/harness.js` | Chrome discovery, reporting, orientation reference. |
-| `_qa/package.json` | Declares the one dependency, `puppeteer-core`. |
-| `_qa/package-lock.json` | Pins it. |
-| `_qa/README.md` | How to run it, and why the folder name starts with an underscore. |
+`graphics/logos/TPname.png` and `graphics/logos/masterFavicon_BG.png`. Neither
+is tracked and **neither is gitignored**, so `git add -A` or `git add .` would
+sweep both into the launch commit. Stage the three files by name.
 
-**New (untracked) — IGNORE (already ignored, listed so nobody re-adds them):**
+### What the correction actually changed
 
-| Path | Why |
-|---|---|
-| `graphics/videos/IntroVideoFromChase.mp4` | 9MB master, archived outside the repo. See above. |
-| `_qa/node_modules/` | `puppeteer-core`, restored by `npm install --prefix _qa`. |
+**One conversion pattern in burger mode, not two.** A Call chip was briefly
+added to the burger header and then removed on review: it created a second
+competing pattern, and at 324px it crowded the wordmark. The header is back to
+`[logo] [hamburger]` at every width ≤1200px.
 
-**Pre-existing and unchanged — still an open decision, not this session's work:**
+**The bottom action bar now covers the whole burger range.** It previously
+appeared only at ≤640px, which left **641–1200px — every tablet and small
+laptop — with the burger nav and no persistent conversion action at all.**
+That was the real defect. `.backToTopButton` deliberately stayed at 640px.
 
-| Path | Status |
-|---|---|
-| `graphics/logos/masterFavicon_BG.png` | Kept deliberately as an alternate logo concept to show Chase. Not an approved favicon. |
-| `graphics/logos/TPname.png` | Carried untracked by previous closeouts. **Nobody has recorded what this file is for.** Worth resolving. |
+**The bar is tied to the hero, not to the header.** It used to appear whenever
+the header hid on a scroll down, which could cover the hero's own Call and
+Estimate controls. It now waits until the hero leaves the viewport and hides
+again on return.
 
-**No scratch, debug, screenshot or experiment file is anywhere in the working
-tree.** All throwaway tooling from this session stayed in the session scratchpad
-and was deliberately not preserved — see `_qa/README.md`, *Deliberately not
-preserved*.
-
-> **DO NOT `git add -A` BLINDLY.** It would sweep in the two undecided logo
-> files along with everything else. Stage the 18 intended paths explicitly, or
-> add the logos to `.gitignore` first if they are meant to stay local.
+**The hero compact row is two rows, not three-across.** `Call Chase` and
+`Get Estimate` sit side by side; the property-address field spans the full
+width beneath them. The form got `display: contents` so its input and button
+become grid items — the form element, its submit handler and the estimate flow
+are untouched.
 
 **What has and has not been seen in a browser** — still the honest distinction,
 and it is now better than it was:
@@ -936,78 +962,58 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 ## NEXT SESSION SHOULD START HERE
 
-**The video is done. The next major task is the GEOGRAPHIC SEO AUDIT.**
+**THE SITE IS ON NETLIFY AND THE DNS SWITCH IS THE LAST STEP. Do not change
+DNS until the responsive fix is committed and redeployed.**
 
-Before anything else, note that **the working tree is dirty and the work in it is
-finished and verified** — see *Uncommitted Work* above for every file and how it
-should be classified. It was left uncommitted deliberately, at Aron's
-instruction. **Decide whether to commit it before starting new work; do not
-start the audit on top of an unreviewed tree.**
+1. **Review the responsive correction and commit it.** Three tracked files:
+   `css/styleIndex.css`, `index.html`, `js/indexJS.js`. **Stage them by name.**
+   `git add -A` would also sweep in `graphics/logos/TPname.png` and
+   `graphics/logos/masterFavicon_BG.png`, which are untracked *and* not
+   gitignored.
 
-1. **Read `CLAUDE.md`, then this file, then `engineeringJournal.md` (top entry)
-   and `technicalDebt.md`.** The repository is authoritative — correct stale
-   documentation rather than carrying it forward. **Commit hashes recorded
-   before 2026-08-15 no longer resolve.** And note the lesson from this session:
-   a warning carried across three closeouts ("the video arrives rotated 180
-   degrees") turned out to be wrong, and ninety seconds of `ffprobe` beat three
-   sessions of notes.
+2. **Visually confirm at ~712px, ~390px and ~324px** before committing. Those
+   three are the widths that exposed the original problems. The automated
+   suite passes 216/216, but nobody has looked at 712px on a real tablet.
 
-2. **Verify Git state.** `git fetch` + `git rev-list --left-right --count
-   origin/main...HEAD` in both directions. Expect `main`, and the uncommitted
-   video and `_qa/` work described above.
+3. **Push, then verify the Netlify redeploy** and smoke-test the preview.
 
-3. **Establish a baseline before changing anything:**
+4. **Then, and only then, connect `bluegridlandsolutions.com`** — replace the
+   GitHub Pages records at Namecheap with Netlify's.
 
-   ```
-   npm install --prefix _qa     # once, if node_modules is absent
-   node _qa/runAll.js           # expect 90/90
-   ```
+5. **Verify after the switch**, in this order:
+   - HTTPS resolves and the certificate covers apex *and* `www`
+   - **`www` → apex still redirects.** Pages did this for free; Netlify must be
+     configured to. If it does not, every canonical on the site disagrees with
+     the served URL. See *Hosting*.
+   - **A deep bad path still serves `404.html` without a redirect** — e.g.
+     `/locations/does-not-exist.html`. Pages preserved the base URL, which is
+     why every path in `404.html` is root-absolute. Not yet re-verified on
+     Netlify.
+   - The estimate form posts and a lead lands in the Sheet
+   - GA4 and Clarity both receive traffic
+   - `sitemap.xml` reachable; submit in Search Console and request indexing
 
-   This is new and it is in the repository — it does not need locating in a
-   scratchpad. **The 28 older validator suites still do**, and they were not run
-   this session (item 10i). If they can be recovered, recover them and run them
-   too; that is the honest baseline.
+6. **Decide `_qa/` exposure before submitting the sitemap.** Netlify does not
+   run Jekyll, so `_qa/` is publicly served — the opposite of what its README
+   claims. Nothing in it is secret, but it is crawlable. One line in
+   `robots.txt`, a `netlify.toml` exclusion, or a shrug. `technicalDebt.md`
+   item 53. Cheapest moment to settle it is before indexing is requested.
 
-4. **THE MAIN TASK: the geographic SEO audit.**
+7. **Still open, unchanged by launch:** Google Business Profile verification
+   (created but unverified — the local pack is unavailable until it is), the
+   Bing postcard/PIN, Chase's caption sign-off, and an offsite copy of the
+   video master. All external or client-side.
 
-   **There is an unresolved decision waiting at the front of it.** *Open
-   Decisions* item 1 records an audit delivered 2026-08-15 recommending the
-   homepage stay **regional** rather than target Wheelersburg specifically.
-   **Aron has neither accepted nor rejected it.** Settle that first — the rest
-   of the geographic work depends on which way it goes.
-
-   **And a hard constraint on the whole exercise, from *Open Decisions* item 2:**
-   **no search-volume, keyword-difficulty or competitor data exists anywhere in
-   this repository.** The only prioritisation rationale ever recorded is one
-   unquantified line in `seoPlan.md`. Every geographic decision to date has been
-   made without it. Either gather that data or state plainly that the audit is
-   reasoning from site structure alone — do not let it look quantified when it
-   is not.
-
-   Known territory the audit has to cover:
-
-   - **West Union, OH and Flatwoods, KY are advertised in the nav but appear
-     nowhere in `seoPlan.md`'s 11-city table, and have no pages.** Give them
-     pages or take them out of the nav. Open since the location-pages session.
-   - **9 location pages exist**; `seoPlan.md` lists 11 cities.
-   - **Portsmouth already claims Wheelersburg** in copy *and* FAQ schema.
-   - `LocalBusiness` declares **12 counties with no address**.
-   - Item 10k: `Service` schema uses an inline provider stub on 13 pages instead
-     of an `@id` reference — deliberately deferred to the domain sweep.
-
-5. **Then the Chase review.** He has still never seen the site end to end.
-   Expect it to generate its own list.
-
-6. **External, client-side, and not repository work:** Google Business Profile
-   verification and the Bing Places postcard/PIN. Both still unresolved. Neither
-   blocks anything in the codebase.
-
-7. **Two things need a human, not a session** — both recorded under *Waiting on
-   Aron*: signing off the caption wording, and an offsite copy of the video
-   master.
+8. **Do not rerun or rework the geographic SEO** unless an actual defect turns
+   up. It is committed, verified, and the reasoning is in the 2026-08-27
+   journal entry.
 
 ### Do NOT redo any of this
 
+- **The burger-mode conversion pattern is settled: bottom bar only.** A Call
+  chip in the header was tried and removed on review. Do not put a second
+  conversion pattern back into the burger header — that was the defect, and at
+  324px it also crowded the wordmark.
 - **The owner introduction video is finished and must not be rebuilt.** The
   faststart remux, the t=21.30s poster, the play affordance and the caption
   track are approved. **Do not re-encode the video to "fix" the rotation** — it

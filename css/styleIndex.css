@@ -2937,6 +2937,24 @@ html.animationFallback .comparisonSlider[data-animate] .comparisonHandle
 
 }
 
+/* Shown at every width where .heroActions itself is on screen —
+   above 1080px. .heroActions is hidden by the 1080px block below, so
+   this never has to be gated a second time: below 1080px it is inert
+   by inheritance, exactly like .heroMobileActions is inert above it. */
+
+.heroActionsCallCta
+{
+
+    display: inline-flex;
+
+    /* .buttonLarge already measures well past this at its own
+       padding; the floor is here so a future padding change cannot
+       quietly take the touch target under 44px. */
+
+    min-height: 44px;
+
+}
+
 .heroStats
 {
 
@@ -2982,6 +3000,16 @@ html.animationFallback .comparisonSlider[data-animate] .comparisonHandle
     display: flex;
 
     flex-direction: column;
+
+    /* Without this a flex item refuses to shrink below its content
+       width -- the same rule .heroStarterInput documents above. Here
+       the content is a label that can wrap, but the automatic minimum
+       pinned every stat to its full unwrapped phrase width, which was
+       wider than .heroStats ever had room for below ~354px and pushed
+       the third stat out past the viewport with no scrollbar to show
+       for it. */
+
+    min-width: 0;
 
 }
 
@@ -7990,6 +8018,18 @@ html.jsEnabled .consentInlineControl
 
     }
 
+    /* ONE CONVERSION PATTERN IN BURGER MODE, NOT TWO.
+
+       A Call chip lived here briefly and was removed on review. Burger
+       mode now has exactly one persistent conversion mechanism — the
+       bottom action bar below — and the header goes back to logo plus
+       hamburger. Two competing patterns in the same viewport band was
+       the problem; at 324px the chip also crowded the wordmark, which
+       is the symptom that settled it.
+
+       Everything the chip did is now the bar's job, at every burger
+       width rather than only below 640px. */
+
     .phoneChip
     {
 
@@ -8217,10 +8257,21 @@ html.jsEnabled .consentInlineControl
 
     }
 
+    /* minmax(0, 1fr), not 1fr. A bare 1fr column defaults to
+       minmax(auto, 1fr), and "auto" resolves to the content's own
+       min-content size once nothing inside can shrink further -- which
+       is exactly the hero-actions button pair below ~354px. That forced
+       this single column wider than the viewport and let the overflow
+       spill silently past .heroInner's own (correctly-sized) box: the
+       Get Estimate button clipped off the right edge, the third proof
+       stat pushed out of view, all without ever triggering a page-level
+       horizontal scrollbar, because overflow:hidden further up absorbed
+       it. minmax(0, 1fr) lets the column actually shrink to fit. */
+
     .heroInner
     {
 
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
 
         gap: 3rem;
 
@@ -8240,7 +8291,8 @@ html.jsEnabled .consentInlineControl
 
     }
 
-    /* ============================================================
+
+/* ============================================================
        THE COMPACT ESTIMATE SYSTEM STARTS HERE, NOT AT 640px
 
        1080px is where .heroInner drops to a single column, so the
@@ -8280,16 +8332,31 @@ html.jsEnabled .consentInlineControl
        22rem basis is what makes it wrap to its own line rather than
        crush the input when there is not room for both. */
 
+    /* TWO CTAs ABOVE, THE ADDRESS FIELD ACROSS THE BOTTOM.
+
+       This was a single flex row, so Call Chase, the address input and
+       Get Estimate all competed for one line and the field — the thing
+       actually being filled in — ended up squeezed between two buttons.
+
+       It is a two-column grid now. The two actions sit side by side on
+       row one and the field spans the full width on row two, where it
+       can actually be typed into.
+
+       display: contents on the form is what makes that possible
+       without touching the markup: the form box disappears from the
+       layout so its input and button become grid items of this
+       container, while the form element itself — and therefore the
+       submit handler, the label association and the existing estimate
+       flow — is completely unaffected. */
+
     .heroMobileActions
     {
 
-        display: flex;
+        display: grid;
 
-        flex-direction: row;
+        grid-template-columns: 1fr 1fr;
 
-        flex-wrap: wrap;
-
-        align-items: center;
+        align-items: stretch;
 
         gap: 0.7rem;
 
@@ -8297,17 +8364,39 @@ html.jsEnabled .consentInlineControl
 
     }
 
-    .heroCallCta
-    {
-
-        flex: 0 0 auto;
-
-    }
-
     .heroEstimateStarter
     {
 
-        flex: 1 1 22rem;
+        display: contents;
+
+    }
+
+    .heroCallCta
+    {
+
+        grid-column: 1;
+
+        grid-row: 1;
+
+    }
+
+    .heroStarterButton
+    {
+
+        grid-column: 2;
+
+        grid-row: 1;
+
+    }
+
+    .heroStarterInput
+    {
+
+        grid-column: 1 / -1;
+
+        grid-row: 2;
+
+        width: 100%;
 
     }
 
@@ -8384,6 +8473,199 @@ html.jsEnabled .consentInlineControl
 
 }
 
+
+
+/* ============================================================
+   BOTTOM ACTION BAR — THE WHOLE BURGER RANGE, NOT JUST PHONES
+
+   These rules used to live inside the 640px block, which left the
+   641-1200px band — every tablet and small laptop — with the burger
+   nav but no persistent conversion action at all. The bar is now the
+   single conversion pattern for the entire burger range, which is why
+   the header no longer carries a Call chip.
+
+   Only the bar moved. .backToTopButton stays at 640px, because a
+   back-to-top control on a tablet is a different question and was not
+   part of this change.
+
+   Positioning is unchanged and already correct: it clears the safe
+   area, and --consentBannerOffset (set live by js/consent.js) keeps it
+   above the cookie banner instead of underneath it.
+
+   Visibility is decided in js/indexJS.js — the bar stays out of the
+   way while the hero's own Call/Estimate controls are on screen, and
+   appears once they scroll away.
+============================================================ */
+
+@media (max-width: 1200px)
+{
+
+    .mobileFloatingActions
+    {
+
+        position: fixed;
+
+        right: max(1rem, env(safe-area-inset-right, 0px));
+
+        /* --consentBannerOffset is set by js/consent.js to the live
+           height of the consent banner while it is on screen, and
+           removed when it is dismissed. Without it the banner would
+           sit on top of the call and estimate buttons — the two most
+           important controls on a phone — until the visitor answered
+           it. Defaults to 0px, so this is the normal offset whenever
+           no banner is showing. */
+
+        bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px) + var(--consentBannerOffset, 0px));
+
+        left: max(1rem, env(safe-area-inset-left, 0px));
+
+        z-index: 260;
+
+        display: grid;
+
+        grid-template-columns: 0.92fr 1.08fr;
+
+        align-items: center;
+
+        gap: 0.45rem;
+
+        /* No fixed height on purpose. box-sizing is border-box, so a
+           height here is the OUTER box and the buttons have to fit
+           inside it minus this padding and the border below. It used to
+           say 60px, which left a 44.56px content box for 46px buttons,
+           so they overflowed 0.72px past the top and bottom and painted
+           over the border — pills on a 24px radius, crossing the corner
+           on a different curve. Sizing to content means the bar is
+           always exactly its buttons plus its own padding and border. */
+
+        padding: 0.42rem;
+
+        background-color: rgba(16, 18, 20, 0.84);
+
+        border: 1px solid rgba(247, 249, 251, 0.16);
+
+        border-radius: 24px;
+
+        box-shadow: 0 18px 45px rgba(16, 18, 20, 0.36);
+
+        backdrop-filter: blur(14px);
+
+        -webkit-backdrop-filter: blur(14px);
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transform: translate3d(0, calc(100% + 1.4rem + env(safe-area-inset-bottom, 0px)), 0);
+
+        visibility: hidden;
+
+        transition:
+            transform 0.26s var(--easePremium),
+            opacity 0.24s var(--easePremium),
+            visibility 0.26s var(--easePremium);
+
+    }
+
+    .mobileFloatingActions.isVisible
+    {
+
+        opacity: 1;
+
+        pointer-events: auto;
+
+        transform: translate3d(0, 0, 0);
+
+        visibility: visible;
+
+    }
+
+    .mobileFloatingCall,
+    .mobileFloatingEstimate
+    {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        height: 46px;
+
+        border-radius: var(--radiusPill);
+
+        white-space: nowrap;
+
+    }
+
+    .mobileFloatingCall
+    {
+
+        gap: 0.45rem;
+
+        color: var(--colorWhite);
+
+        font-size: 0.82rem;
+
+        font-weight: 700;
+
+        letter-spacing: 0.08em;
+
+        text-transform: uppercase;
+
+        background-color: rgba(247, 249, 251, 0.09);
+
+        border: 1px solid rgba(247, 249, 251, 0.18);
+
+        transition:
+            transform 0.24s var(--easePremium),
+            background-color 0.24s var(--easePremium),
+            border-color 0.24s var(--easePremium);
+
+    }
+
+    .mobileFloatingCall:hover,
+    .mobileFloatingCall:focus-visible
+    {
+
+        color: var(--colorWhite);
+
+        background-color: rgba(247, 249, 251, 0.14);
+
+        border-color: rgba(247, 249, 251, 0.3);
+
+        transform: translateY(-1px);
+
+    }
+
+    .mobileFloatingCall svg
+    {
+
+        width: 17px;
+
+        height: 17px;
+
+        fill: currentColor;
+
+    }
+
+    .mobileFloatingEstimate
+    {
+
+        width: 100%;
+
+        padding: 0 0.95rem;
+
+        font-size: 0.82rem;
+
+        box-shadow: none;
+
+    }
+
+}
+
+
+
 @media (max-width: 640px)
 {
 
@@ -8415,10 +8697,13 @@ html.jsEnabled .consentInlineControl
     /* Full-width stack. On a phone the Call CTA earns its own line —
        side by side, both targets get too narrow to hit confidently. */
 
+    /* The container is a grid from 1080px down now, so the old
+       flex-direction: column here would do nothing. The two CTAs stay
+       side by side on a phone — they are comfortable at 375px — and
+       the address field keeps the full width beneath them. */
+
     .heroMobileActions
     {
-
-        flex-direction: column;
 
         align-items: stretch;
 
@@ -8949,169 +9234,6 @@ html.jsEnabled .consentInlineControl
         width: 100%;
 
     }
-
-    .mobileFloatingActions
-    {
-
-        position: fixed;
-
-        right: max(1rem, env(safe-area-inset-right, 0px));
-
-        /* --consentBannerOffset is set by js/consent.js to the live
-           height of the consent banner while it is on screen, and
-           removed when it is dismissed. Without it the banner would
-           sit on top of the call and estimate buttons — the two most
-           important controls on a phone — until the visitor answered
-           it. Defaults to 0px, so this is the normal offset whenever
-           no banner is showing. */
-
-        bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px) + var(--consentBannerOffset, 0px));
-
-        left: max(1rem, env(safe-area-inset-left, 0px));
-
-        z-index: 260;
-
-        display: grid;
-
-        grid-template-columns: 0.92fr 1.08fr;
-
-        align-items: center;
-
-        gap: 0.45rem;
-
-        /* No fixed height on purpose. box-sizing is border-box, so a
-           height here is the OUTER box and the buttons have to fit
-           inside it minus this padding and the border below. It used to
-           say 60px, which left a 44.56px content box for 46px buttons,
-           so they overflowed 0.72px past the top and bottom and painted
-           over the border — pills on a 24px radius, crossing the corner
-           on a different curve. Sizing to content means the bar is
-           always exactly its buttons plus its own padding and border. */
-
-        padding: 0.42rem;
-
-        background-color: rgba(16, 18, 20, 0.84);
-
-        border: 1px solid rgba(247, 249, 251, 0.16);
-
-        border-radius: 24px;
-
-        box-shadow: 0 18px 45px rgba(16, 18, 20, 0.36);
-
-        backdrop-filter: blur(14px);
-
-        -webkit-backdrop-filter: blur(14px);
-
-        opacity: 0;
-
-        pointer-events: none;
-
-        transform: translate3d(0, calc(100% + 1.4rem + env(safe-area-inset-bottom, 0px)), 0);
-
-        visibility: hidden;
-
-        transition:
-            transform 0.26s var(--easePremium),
-            opacity 0.24s var(--easePremium),
-            visibility 0.26s var(--easePremium);
-
-    }
-
-    .mobileFloatingActions.isVisible
-    {
-
-        opacity: 1;
-
-        pointer-events: auto;
-
-        transform: translate3d(0, 0, 0);
-
-        visibility: visible;
-
-    }
-
-    .mobileFloatingCall,
-    .mobileFloatingEstimate
-    {
-
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        height: 46px;
-
-        border-radius: var(--radiusPill);
-
-        white-space: nowrap;
-
-    }
-
-    .mobileFloatingCall
-    {
-
-        gap: 0.45rem;
-
-        color: var(--colorWhite);
-
-        font-size: 0.82rem;
-
-        font-weight: 700;
-
-        letter-spacing: 0.08em;
-
-        text-transform: uppercase;
-
-        background-color: rgba(247, 249, 251, 0.09);
-
-        border: 1px solid rgba(247, 249, 251, 0.18);
-
-        transition:
-            transform 0.24s var(--easePremium),
-            background-color 0.24s var(--easePremium),
-            border-color 0.24s var(--easePremium);
-
-    }
-
-    .mobileFloatingCall:hover,
-    .mobileFloatingCall:focus-visible
-    {
-
-        color: var(--colorWhite);
-
-        background-color: rgba(247, 249, 251, 0.14);
-
-        border-color: rgba(247, 249, 251, 0.3);
-
-        transform: translateY(-1px);
-
-    }
-
-    .mobileFloatingCall svg
-    {
-
-        width: 17px;
-
-        height: 17px;
-
-        fill: currentColor;
-
-    }
-
-    .mobileFloatingEstimate
-    {
-
-        width: 100%;
-
-        padding: 0 0.95rem;
-
-        font-size: 0.82rem;
-
-        box-shadow: none;
-
-    }
-
     .backToTopButton
     {
 
@@ -9195,6 +9317,92 @@ html.jsEnabled .consentInlineControl
         background-color: var(--colorSkyLight);
 
         transform: translate3d(0, -1px, 0);
+
+    }
+
+}
+/* ============================================================
+   HERO CTA PAIR — KEEPING BOTH ON ONE LINE UNDER 430px
+
+   The two hero actions sit side by side in a 1fr 1fr grid. Below
+   430px each column is 158-177px while "Call Chase" needs 183px at
+   the .buttonLarge padding of 2.1rem a side, so the label wrapped to
+   two lines and the pair grew from 62px tall to 91px.
+
+   The fix is the padding, not the layout: the buttons keep their full
+   width and their 44px+ target, they just stop reserving 67px of
+   horizontal air they do not have. Measured at 324px, the narrowest
+   width tested, where the label needs 143px against a 157px column.
+============================================================ */
+
+@media (max-width: 430px)
+{
+
+    .heroMobileActions .heroCallCta,
+    .heroMobileActions .heroStarterButton
+    {
+
+        padding-left: 0.85rem;
+
+        padding-right: 0.85rem;
+
+    }
+
+    .heroMobileActions .heroCallCta
+    {
+
+        gap: 0.4rem;
+
+    }
+
+}
+
+/* ============================================================
+   HERO CTA PAIR, SECOND STEP -- 340px AND BELOW
+
+   The 430px step above keeps both buttons on one line down to 341px.
+   Measured: 340px still fits at 0.85rem padding, 336px wraps to 91px
+   tall. Below that the column itself (see .heroInner above) is simply
+   too narrow for 0.85rem a side, so this repeats the same fix at a
+   smaller number rather than inventing a new mechanism. Verified at
+   320px, the narrowest width tested: both labels stay on one line,
+   62px tall, same as every wider step.
+============================================================ */
+
+@media (max-width: 340px)
+{
+
+    .heroMobileActions .heroCallCta,
+    .heroMobileActions .heroStarterButton
+    {
+
+        padding-left: 0.5rem;
+
+        padding-right: 0.5rem;
+
+    }
+
+}
+
+/* ============================================================
+   HERO PROOF STATS -- 350px AND BELOW
+
+   .heroStat can shrink now (see the base rule above), and two of the
+   three labels wrap and fit with room to spare. The third,
+   "Counties Served", still ran its second line past the row: measured
+   360px clears by 0.1px, 350px is 3.1px short, growing to 12.2px by
+   320px as the standing 1.6rem gap ate space the label needed more.
+   Trimming the gap gives that back. Verified zero overflow at every
+   width from 350px down to 320px, the narrowest tested.
+============================================================ */
+
+@media (max-width: 350px)
+{
+
+    .heroStats
+    {
+
+        gap: 0.25rem;
 
     }
 

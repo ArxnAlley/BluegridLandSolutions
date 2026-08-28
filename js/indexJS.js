@@ -132,7 +132,12 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 
 const mobileHeaderMediaQuery = window.matchMedia('(max-width: 1080px)');
 
-const mobileActionMediaQuery = window.matchMedia('(max-width: 640px)');
+/* The bottom action bar is the single conversion pattern for the whole
+   burger-navigation range, so this tracks the nav collapse breakpoint
+   (1200px) rather than the phone breakpoint it used to. The parallax
+   query below is a separate concern and stays at 640px. */
+
+const mobileActionMediaQuery = window.matchMedia('(max-width: 1200px)');
 
 const mobileParallaxMediaQuery = window.matchMedia('(max-width: 640px)');
 
@@ -2531,9 +2536,24 @@ function updateFloatingControls(currentScrollY = Math.max(window.scrollY, 0))
 
     const isMenuOpen = mobileMenu.classList.contains('isOpen');
 
-    const isTopNavigationHidden = siteHeader.classList.contains('isHiddenMobile');
+    /* THE BAR IS TIED TO THE HERO, NOT TO THE HEADER.
 
-    const shouldShowMobileActions = isMobileActionViewport && isTopNavigationHidden && !isMenuOpen;
+       It used to appear whenever the header hid itself on a scroll
+       down, which meant it could cover the hero's own Call Chase and
+       Get Estimate controls while the visitor was still looking at
+       them — two copies of the same two actions, one on top of the
+       other.
+
+       Now it waits until the hero has actually left the viewport, and
+       goes away again the moment the visitor scrolls back to it. The
+       hero owns conversion while it is on screen; the bar takes over
+       once it is not. */
+
+    const heroBounds = heroSection ? heroSection.getBoundingClientRect() : null;
+
+    const hasLeftHero = Boolean(heroBounds) && heroBounds.bottom <= 0;
+
+    const shouldShowMobileActions = isMobileActionViewport && hasLeftHero && !isMenuOpen;
 
     const footerBounds = siteFooter ? siteFooter.getBoundingClientRect() : null;
 

@@ -638,6 +638,21 @@ Three master logos: `MasterLogo.png` (1.2 MB) and `TPNulo_StudioLogo.png` (962 K
 ### 51. `validateFavicons` prints a note it no longer earns
 With the SVG icon link removed (item 41), no page references an SVG icon, so the suite's "SVG icons rasterise to non-blank output" check now iterates an empty set — but the note is printed unconditionally. The note is vacuous rather than wrong, and everything the suite actually checks still passes. One-line fix whenever the toolchain is next touched.
 
+### 56. Two untracked logo files are a standing `git add -A` hazard
+`graphics/logos/TPname.png` and `graphics/logos/masterFavicon_BG.png` have been carried untracked through five closeouts. **Neither is gitignored**, so any `git add -A` or `git add .` sweeps both into whatever commit is being made — including the launch commit.
+
+`masterFavicon_BG.png` is the rejected circular-wordmark favicon master, kept deliberately as an alternate logo concept to show Chase (item 39). **Nothing in this repository records what `TPname.png` is for**, and nobody has said.
+
+**Fix, and it is one decision not a task:** commit them, gitignore them, or delete them. Until then every commit on this project carries the same avoidable risk, and the mitigation is a sentence in `projectState.md` telling people to stage by name.
+
+### 57. Pages-specific hosting behaviours are unverified on Netlify
+The site moved to Netlify on 2026-08-28 while `bluegridlandsolutions.com` still points at GitHub Pages. Two behaviours the repository is built around came free from Pages and do not from Netlify:
+
+- **`www` → apex.** Pages handled it with no config. On Netlify it is a domain setting. If it is not configured, **every canonical on all 32 indexable pages disagrees with the served URL** — which is the single most damaging SEO outcome available at this stage.
+- **`404.html` at any depth without a redirect.** Pages served it with the browser's base URL still pointing at the missing directory, which is the entire reason every path inside `404.html` is root-absolute (item 30). Netlify serves a 404 page too, but **the no-redirect depth behaviour has not been re-tested**. Try `/locations/does-not-exist.html` after the switch.
+
+Also still true and now slightly odd: **`CNAME` is still in the repository.** Harmless on Netlify, but it is a Pages artifact and a future reader will assume it means something.
+
 ### 52. The video master is gitignored — which means Git is no longer protecting it
 `graphics/videos/IntroVideoFromChase.mp4` (9,018,260 B, MD5 `63f9fa5255a4840db6abbd29d5dfd950`) is Chase's original recording and is **excluded from the repository** by an explicit `.gitignore` rule. The reasons are sound: nothing on the site loads it, the site is published with GitHub Pages so committing it would make a 9MB file both permanently resident in Git history and publicly downloadable, and a later deletion would not shrink the history. It was **never committed**, so no history rewrite is needed — verified with `git log --all -- <path>` returning zero commits.
 
@@ -645,10 +660,14 @@ With the SVG icon link removed (item 41), no page references an SVG icon, so the
 
 Archived to `ClientSites/_archive/client_BluegridLandSolutions/video/`, verified byte-identical, with a README recording the codec facts and the display-matrix trap. **That archive is on the same machine and the same disk as the working copy.** It protects against `git clean` and a repository reset, not against drive failure. **An offsite copy is still owed.**
 
-### 53. `_qa/` relies on Jekyll's underscore convention to stay out of production
-The QA suite lives in `_qa/` rather than `qa/` because this repository *is* the deployed site, and GitHub Pages builds it with Jekyll (there is no `.nojekyll` file). Jekyll does not copy directories whose names begin with `_` into the built site, so `_qa/` should not be reachable at the public domain.
+### 53. `_qa/` IS PUBLICLY SERVED ON NETLIFY — the Jekyll assumption died with the host change
+**The premise of this item was voided on 2026-08-28.** `_qa/` was named with a leading underscore because GitHub Pages runs Jekyll, and Jekyll does not copy `_`-prefixed directories into the built site. **Netlify does not run Jekyll**, and there is no `netlify.toml`, `_redirects` or `_headers` in this repository — verified 2026-08-28. So the folder is served, at the Netlify URL now and at the apex the moment DNS moves.
 
-**This has not been verified against the live site.** It rests on documented Jekyll behaviour, not on a request to `https://bluegridlandsolutions.com/_qa/runAll.js` coming back 404. Worth confirming once, cheaply, next time anyone is looking at production.
+**Severity: low, but decide it before the sitemap is submitted.** Nothing in `_qa/` is secret — it is inert test JavaScript, and `node_modules` is gitignored — but it is crawlable, and Search Console indexing is step 8 of the launch sequence.
+
+**Three ways out, in ascending effort:** a `Disallow: /_qa/` line in `robots.txt`; a `netlify.toml` that excludes the directory from the publish output; or moving the suite out of the repository root entirely. The first is one line and stops indexing without pretending the files are unreachable.
+
+**`_qa/README.md` still describes the Jekyll behaviour and is now wrong on that point.** Correct it in the same pass.
 
 **And it is fragile in one specific way:** if anyone ever adds a `.nojekyll` file — a normal thing to do, and something a future session might do for an unrelated reason — `_qa/` silently starts being served. Nothing in it is secret; it is inert test code with no credentials. But the correct response at that point is to move it out of the repository root, not to shrug.
 

@@ -63,3 +63,6 @@ _qa/node_modules/
 # Stays local; never tracked, never committed.
 
 docs/sessionCloseout.md
+
+graphics/logos/TPname.png
+graphics/logos/masterFavicon_BG.png

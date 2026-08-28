@@ -4,6 +4,185 @@ Append-only. Newest entry at the top.
 
 ---
 
+## 2026-08-28 — LAUNCH DAY: PUSHED TO NETLIFY, THEN FIXED THE CONVERSION GAP IT EXPOSED
+
+Two things happened. `e380746` — "Prepare BlueGrid production launch", 50 files,
++3357 / −421 — carried the geographic SEO architecture, the Chase intro video
+and the `_qa/` suite to `origin/main`, and Aron deployed it to **Netlify**
+(project `bluegrid-land-solutions`). Then the deployed preview exposed a
+conversion gap that no amount of local desktop work had made visible, and the
+rest of the session was spent closing it.
+
+**DNS has not been switched.** `bluegridlandsolutions.com` still points at
+GitHub Pages.
+
+---
+
+### 1. The gap: 641–1200px had no conversion action at all
+
+The nav collapses to a hamburger at **1200px**. The bottom action bar carrying
+*Call Now* and *Free Estimate* only appeared at **640px**. Nobody had put those
+two numbers side by side before.
+
+So every width from **641px to 1200px** — the entire tablet and small-laptop
+band — shipped a header that was logo plus hamburger, no phone number, no
+estimate CTA, and no floating bar either. The only route to converting was to
+open the menu first.
+
+That is the defect. Everything below is the argument about how to close it.
+
+### 2. The wrong fix, and why it was reverted
+
+The first attempt put the existing `.phoneChip` back into the burger header:
+`[logo] [(740) 464-2526] [☰]`, with the number collapsing to a compact "Call"
+below 480px. It worked, it measured 118/118, and it was wrong.
+
+Two reasons, and the second is the one that settled it:
+
+- **It created a second conversion pattern.** The site would have had a header
+  CTA between 641–1200px and a bottom bar below 640px — two different answers
+  to the same question depending on how wide the screen was.
+- **At 324px it crowded the wordmark.** Aron caught this on a real device.
+  The chip, the badge, the "BLUEGRID / LAND SOLUTIONS" lockup and a 44px
+  hamburger do not coexist at that width without something giving.
+
+The instinct to shrink things to fit was explicitly rejected. The right move
+was to remove the redundant element and give the brand back the space.
+
+### 3. The fix: one pattern, the bar, everywhere
+
+**The bar's rules moved out of the 640px block into a top-level
+`@media (max-width: 1200px)`.** Not copied — moved, so there is one definition
+rather than two that can drift. `.backToTopButton` deliberately stayed at
+640px; a back-to-top control on a tablet is a different question.
+
+`mobileActionMediaQuery` in `js/indexJS.js` went `640px → 1200px` to match.
+
+**And the bar was retied to the hero.** It had been keyed to
+`isHiddenMobile` — "the header hid itself on a scroll down" — which meant it
+could appear over the hero's own Call Chase and Get Estimate controls while
+the visitor was still looking at them. Two copies of the same two actions,
+one on top of the other.
+
+```js
+const heroBounds = heroSection ? heroSection.getBoundingClientRect() : null;
+const hasLeftHero = Boolean(heroBounds) && heroBounds.bottom <= 0;
+```
+
+The hero owns conversion while it is on screen. The bar takes over once it is
+not, and stands down again the moment the visitor scrolls back.
+
+### 4. The hero row: three-across became two rows
+
+At burger widths the hero offered `[Call Chase] [address field] [Get Estimate]`
+on a single flex line, which squeezed the field — the thing actually being
+filled in — between two buttons.
+
+It is a two-column grid now: the two actions share row one, the address field
+spans both columns on row two.
+
+**`display: contents` on the form is what made that possible without touching
+the markup.** The `<form>` box disappears from layout so its input and button
+become grid items of the container, while the form element itself — and
+therefore the submit handler, the label association and the whole existing
+estimate flow — is untouched. Verified in-browser that the form still owns
+both controls afterwards.
+
+### 5. The measurement that changed the design
+
+Below 430px, "Call Chase" wrapped to two lines and the CTA pair grew from 62px
+to 91px tall. The reflex is to accept the wrap or stack the buttons. Measuring
+first gave a better answer:
+
+| width | column | label needs | at `.buttonLarge` padding |
+|---|---|---|---|
+| 430px | 185px | 183px | just fits |
+| 414px | 177px | 183px | wraps |
+| 375px | 158px | 183px | wraps |
+| 324px | 157px | 183px | wraps |
+
+The padding was 33.6px a side — 67px of horizontal air the button did not
+have. Cutting it to 0.85rem inside `.heroMobileActions` only frees ~40px, and
+the label fits on one line at every width down to 320px. **Measured heights
+after: 62px at all fourteen widths from 1080px to 320px.** The layout never
+had to break; the padding did.
+
+### 6. The bug the suite caught
+
+The bottom-bar rules were first inserted at **brace depth 2** — nested inside
+another media query, because the insertion point was found by searching
+backwards for a comment banner and the search matched an *indented* banner
+inside an already-open block.
+
+Result: the bar was `display: none` at 1200px and worked everywhere below. The
+targeted suite reported `call=0 est=0` at exactly one width. Without it, that
+ships silently as "the bar does not work on tablets" — the same class of defect
+the session had just been convened to fix.
+
+Relocated to top level, re-verified, 216/216.
+
+### 7. What the host change quietly invalidated
+
+Worth recording because it is a documentation trap, not a code one.
+
+`_qa/` is named with a leading underscore **specifically** because GitHub Pages
+runs Jekyll, and Jekyll does not copy `_`-prefixed directories into the built
+site. That reasoning is written down in `_qa/README.md` and in
+`technicalDebt.md` item 53.
+
+**Netlify does not run Jekyll**, and there is no `netlify.toml`, `_redirects`
+or `_headers` in the repository — verified. So `_qa/` is now publicly served,
+which is the exact opposite of the documented intent. Nothing in it is secret
+(inert test JS; `node_modules` is gitignored) but it is crawlable, and the
+sitemap is about to be submitted to Search Console.
+
+Two other Pages behaviours the docs depended on are now assumptions rather
+than facts: **`www` → apex** was handled by Pages for free and must be
+configured on Netlify, and **`404.html` served at any depth without a
+redirect** — the reason every path in that file is root-absolute — has not
+been re-verified on the new host.
+
+None of these were touched. All three are recorded in *Hosting* and in the
+launch sequence.
+
+### Files Modified
+
+- `css/styleIndex.css` — chip re-hidden in burger mode; bar relocated to a
+  top-level 1200px block; hero grid; sub-430px padding
+- `index.html` — redundant `Get My Free Estimate` hero button removed
+- `js/indexJS.js` — bar breakpoint 640→1200; visibility retied to the hero
+
+**Uncommitted at the time of writing**, at Aron's instruction.
+
+### Validation Performed
+
+- `node _qa/runAll.js` → **90/90** (56 video + 34 sitewide), unchanged
+- Targeted responsive suite → **216/216** across 10 burger widths and 5 narrow
+  header widths
+- CTA height 62px — single line — at all 14 widths from 1080px to 320px
+- Wordmark-to-hamburger gap **42.9px at 324px**, **38.9px at 320px**, unclipped
+- Bottom bar confirmed sitting *above* the cookie banner via the existing
+  `--consentBannerOffset`
+- Zero diff touching schema, meta, canonicals, geographic copy, footer, video,
+  analytics, `sitemap.xml`, `robots.txt`, `docs/`, `services/`, `locations/`
+
+### Lessons Learned
+
+- **Deploying is a diagnostic.** The 641–1200px gap existed for weeks and was
+  invisible in local desktop work. Putting the site on a real URL and looking
+  at it on a tablet found it in minutes.
+- **Two patterns for one job is the bug, even when both work.** The header chip
+  passed every check it was given. It was still wrong, because the site then
+  had two different answers to "how do I convert" depending on screen width.
+- **Measure before redesigning.** "Call Chase wraps" looked like a layout
+  problem and was a padding problem. Four numbers turned a redesign into a
+  two-line change.
+- **A migration invalidates documentation silently.** Nothing failed when the
+  host changed. Three written assumptions simply stopped being true, and only
+  re-reading them against the new host surfaced it.
+
+---
+
 ## 2026-08-27 (second session) — THE OWNER VIDEO SHIPPED, AND THE FIRST VALIDATORS ENTERED THE REPOSITORY
 
 **Uncommitted at the time of writing.** Chase's introduction video arrived and

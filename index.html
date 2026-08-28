@@ -1048,7 +1048,7 @@
                 <div class="heroContent">
 
                     <p class="heroKicker" data-heroanimate="fromLeft" data-heroanimatedelay="180">
-                        Forestry Mulching &amp; Land Clearing &middot; Southern Ohio &amp; Eastern Kentucky
+                        Forestry Mulching &amp; Land Clearing &middot; Scioto County, Ohio
                     </p>
 
                     <h1 class="heroHeadline" data-heroanimate="fromLeft" data-heroanimatedelay="340">
@@ -1074,13 +1074,43 @@
                     </h1>
 
                     <p class="heroCopy" data-heroanimate="fromLeft" data-heroanimatedelay="560">
-                        Owner-operated land clearing and forestry mulching across Southern
-                        Ohio &amp; Eastern Kentucky. Done in days, not weeks.
+                        Owner-operated land clearing and forestry mulching serving the
+                        Portsmouth area, Southern Ohio &amp; Eastern Kentucky. Done in days,
+                        not weeks.
                     </p>
+
+                    <!-- Two CTAs above 1080px, not one. The inline estimate
+                         card sits directly beside this copy at these widths,
+                         so this row is the SECONDARY conversion path — the
+                         card is primary. Call Now was added so the hero does
+                         not read as if "See Transformations" — a proof link,
+                         not a conversion action — were the only option.
+
+                         Below 1080px this whole row is hidden and the compact
+                         action row underneath takes over. -->
 
                     <div class="heroActions">
 
-                        <a class="buttonPrimary buttonLarge" href="#estimateForm" data-heroanimate="fromRight" data-heroanimatedelay="740">Get My Free Estimate</a>
+                        <!-- Call Now. Shown at every width .heroActions itself
+                             is shown — everything above 1080px, desktop and the
+                             burger-nav band alike — because "See Transformations"
+                             alone was reading as the primary conversion action
+                             when it is a proof link. The nav still carries its
+                             own phone number and Free Estimate CTA above 1200px;
+                             this is additive inside the hero, not a replacement.
+
+                             At 1080px and below this whole row is hidden and
+                             Call Chase in the compact row takes over instead. -->
+
+                        <a class="buttonPrimary buttonLarge heroActionsCallCta" href="tel:+17404642526" data-confighref="phoneHref" data-heroanimate="fromLeft" data-heroanimatedelay="870">
+
+                            <svg class="buttonIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M6.6 10.8 C8 13.6 10.4 16 13.2 17.4 L15.4 15.2 C15.7 14.9 16.1 14.8 16.5 15 C17.6 15.4 18.8 15.6 20 15.6 C20.6 15.6 21 16 21 16.6 V20 C21 20.6 20.6 21 20 21 C10.6 21 3 13.4 3 4 C3 3.4 3.4 3 4 3 H7.4 C8 3 8.4 3.4 8.4 4 C8.4 5.2 8.6 6.4 9 7.5 C9.1 7.9 9 8.3 8.8 8.6 Z"></path>
+                            </svg>
+
+                            Call Now
+
+                        </a>
 
                         <a class="buttonGhost buttonLarge" href="#beforeAfter" data-heroanimate="fromLeft" data-heroanimatedelay="870">See Transformations</a>
 
