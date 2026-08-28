@@ -2553,9 +2553,15 @@ function updateFloatingControls(currentScrollY = Math.max(window.scrollY, 0))
 
     const hasLeftHero = Boolean(heroBounds) && heroBounds.bottom <= 0;
 
-    const shouldShowMobileActions = isMobileActionViewport && hasLeftHero && !isMenuOpen;
-
     const footerBounds = siteFooter ? siteFooter.getBoundingClientRect() : null;
+
+    /* Once the footer (devCredit included) has entered the viewport,
+       the bar has nothing left below it to float over — hide it here
+       too, not just once the visitor has scrolled past it entirely. */
+
+    const isFooterVisible = Boolean(footerBounds && footerBounds.top < window.innerHeight);
+
+    const shouldShowMobileActions = isMobileActionViewport && hasLeftHero && !isMenuOpen && !isFooterVisible;
 
     const isNearFooter = Boolean(footerBounds && footerBounds.top < window.innerHeight * 0.9);
 
