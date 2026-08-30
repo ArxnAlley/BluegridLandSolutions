@@ -1405,10 +1405,18 @@ function initializeHeroPauseTriggers()
 
 let heroTypedTextNode = null;
 
+let heroTypedLastCommitAt = null;
+
+/* Rebuilds the cached node whenever it is missing OR no longer a child
+   of the live element, not just when it is missing. The second case is
+   what a page-translate tool or a similar DOM-rewriting extension
+   produces: the node keeps accepting writes, but the writes land on a
+   node nothing paints, and the headline looks frozen with no error. */
+
 function writeHeroTypedText(value)
 {
 
-    if (heroTypedTextNode === null)
+    if (heroTypedTextNode === null || heroTypedTextNode.parentNode !== heroTypedText)
     {
 
         heroTypedTextNode = document.createTextNode('');
@@ -1420,6 +1428,8 @@ function writeHeroTypedText(value)
     }
 
     heroTypedTextNode.nodeValue = value;
+
+    heroTypedLastCommitAt = performance.now();
 
 }
 
@@ -1433,7 +1443,7 @@ function runHeroTypedSequence(steps)
 {
 
     return new Promise(
-        function (resolve)
+        function (resolve, reject)
         {
 
             let stepIndex = 0;
@@ -1444,10 +1454,39 @@ function runHeroTypedSequence(steps)
 
             let lastFrameAt = null;
 
+            /* requestAnimationFrame calls handleFrame directly, outside
+               any promise chain -- an exception thrown inside it would
+               otherwise just abort that one native callback, and since
+               neither resolve() nor requestNextFrame() ever runs after
+               that point, this promise would sit pending forever rather
+               than rejecting. Routing the call through this wrapper is
+               what turns "the frame loop silently stopped" into "the
+               promise rejects," so the await chain above can actually
+               see the failure and recover — without touching a line of
+               handleFrame's own timing logic. */
+
             function requestNextFrame()
             {
 
-                window.requestAnimationFrame(handleFrame);
+                window.requestAnimationFrame(handleFrameOrReject);
+
+            }
+
+            function handleFrameOrReject(timestamp)
+            {
+
+                try
+                {
+
+                    handleFrame(timestamp);
+
+                }
+                catch (frameError)
+                {
+
+                    reject(frameError);
+
+                }
 
             }
 
@@ -1738,25 +1777,92 @@ async function runHeroDuetLoop()
 
         const phrase = heroDuetConfig.phrases[heroPhraseIndex];
 
-        await waitForHeroResume();
+        /* Per-cycle recovery. Nothing in this chain used to be allowed
+           to fail — one uncaught error anywhere in it (a rare DOM
+           exception, a conflicting extension, anything) silently killed
+           this whole for(;;) loop forever, leaving whatever was
+           mid-typed on screen. Whatever went wrong, the phrase this
+           cycle owed the visitor is known — heroPhraseIndex has not
+           advanced yet — so recovery is always to that complete phrase,
+           never to blank or partial text, and the loop keeps cycling
+           instead of stopping. */
 
-        await typeHeroPhrase(phrase);
+        try
+        {
 
-        await waitForHeroTiming(heroDuetConfig.settleAfterPeriodMs);
+            await waitForHeroResume();
 
-        await fireHeroForwardSweepAndWait();
+            await typeHeroPhrase(phrase);
 
-        await waitForHeroTiming(heroDuetConfig.afterHoldMs);
+            await waitForHeroTiming(heroDuetConfig.settleAfterPeriodMs);
 
-        await deleteHeroPhrase(phrase);
+            await fireHeroForwardSweepAndWait();
 
-        await fireHeroReverseDissolveAndWait();
+            await waitForHeroTiming(heroDuetConfig.afterHoldMs);
 
-        await waitForHeroTiming(heroDuetConfig.emptyBreathMs);
+            await deleteHeroPhrase(phrase);
+
+            await fireHeroReverseDissolveAndWait();
+
+            await waitForHeroTiming(heroDuetConfig.emptyBreathMs);
+
+        }
+        catch (heroCycleError)
+        {
+
+            writeHeroTypedText(phrase);
+
+            heroCursor.classList.remove('isSolid');
+
+            await waitForHeroTiming(heroDuetConfig.emptyBreathMs);
+
+        }
 
         heroPhraseIndex = (heroPhraseIndex + 1) % heroDuetConfig.phrases.length;
 
     }
+
+}
+
+/* Last resort, independent of the try/catch above. That catch only
+   sees an exception; it cannot see the typed line going quietly stale
+   because something outside this script (a page-translate tool is the
+   common case) reparented or replaced the live text node the cached
+   reference points at — the writes keep "succeeding" with nothing on
+   screen changing, and nothing throws. writeHeroTypedText() already
+   rebuilds that reference the moment it notices, so once the loop's
+   own next write lands, the fix is already in place; this only covers
+   the writes stopping outright.
+
+   7 seconds is well clear of the longest gap a healthy cycle ever
+   leaves between writes — settle + sweep + hold (2.7s) after typing
+   finishes, dissolve + breath (2.0s) after deleting finishes — so it
+   cannot mistake a normal hold for a stall. Paused states (tab hidden,
+   hero scrolled out) are excluded outright: nothing is stuck, nothing
+   is supposed to be moving. */
+
+const heroTypedWatchdogThresholdMs = 7000;
+
+function checkHeroTypedWatchdog()
+{
+
+    if (heroPaused || heroTypedLastCommitAt === null)
+    {
+
+        return;
+
+    }
+
+    if (performance.now() - heroTypedLastCommitAt < heroTypedWatchdogThresholdMs)
+    {
+
+        return;
+
+    }
+
+    writeHeroTypedText(heroDuetConfig.phrases[heroPhraseIndex]);
+
+    heroCursor.classList.remove('isSolid');
 
 }
 
@@ -1824,6 +1930,8 @@ function initializeHeroDuet()
     initializeHeroPauseTriggers();
 
     runHeroDuetLoop();
+
+    window.setInterval(checkHeroTypedWatchdog, 2000);
 
 }
 

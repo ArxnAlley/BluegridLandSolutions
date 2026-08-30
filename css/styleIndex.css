@@ -6880,6 +6880,25 @@ html.jsEnabled .processArrow.isResting
 
 }
 
+/* One phrase per line, same pattern .estimateHeadingLine already uses
+   for the modal heading -- block-level so the second line cannot flow
+   up onto the first, wrapping on its own at narrow widths exactly the
+   way the previous single-phrase heading already did. */
+
+.contactHeadingLine
+{
+
+    display: block;
+
+}
+
+.contactHeadingLineAccent
+{
+
+    color: var(--colorSky);
+
+}
+
 /* Floating caption — a subtle glass chip, not a card. Sized to
    its own content and centered above the CTAs. */
 
