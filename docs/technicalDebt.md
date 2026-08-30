@@ -1,6 +1,10 @@
 # Technical Debt — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-27 (session closeout — footer legal row, favicon decision and restore, Apps Script deployment confirmed)
+**Last updated:** 2026-08-30 (session closeout — hero typing-animation freeze audited, reproduced and fixed; a pre-existing permanently-invisible-heading bug found and fixed on the way to a `#contact` section copy change; a fresh Lighthouse audit against live production)
+
+**Newly opened 2026-08-30:** 58 (`data-animate="clipReveal"` is provably broken — fires once at page load, never again once the element scrolls into view; now unused anywhere on the site, root cause not isolated), 59 (the hero typing loop had zero error handling anywhere in its chain — fixed with a two-layer failsafe, described in full), 60 (render-blocking Google Fonts + unminified CSS re-confirmed against live Netlify production, matching item 44's M1 finding exactly — not new, just fresh evidence tied to a current commit).
+
+**Corrected 2026-08-30, in `projectState.md`:** the claim that hero images are full-resolution with no `srcset` — wrong as of a fresh Lighthouse run against production; responsive images are in place and zero image opportunities are flagged. Also: the homepage geographic target (`projectState.md` Open Decision 1) is not a clean "stayed regional" as previously recorded — title and hero copy now name Scioto County/Portsmouth specifically while `LocalBusiness` schema still declares the full 12-county region. Unruled inconsistency, not a defect in the code.
 
 **Resolved 2026-08-27:** the standing P0 (Sheet `notificationEmail` and `photoViewerEmail` both confirmed as the real BlueGrid account) and the repo/production Apps Script gap (`config.gs` and `validation.gs` pasted, deployment updated with New version). Both reported by Aron; neither is verifiable from this repository.
 
@@ -653,6 +657,37 @@ The site moved to Netlify on 2026-08-28 while `bluegridlandsolutions.com` still 
 
 Also still true and now slightly odd: **`CNAME` is still in the repository.** Harmless on Netlify, but it is a Pages artifact and a future reader will assume it means something.
 
+### 58. `data-animate="clipReveal"` is provably broken and unused anywhere on the site — opened 2026-08-30
+
+Found while giving the final `#contact` section new copy: its heading (`.contactHeading`, `data-animate="clipReveal"`) never revealed and stayed permanently at `opacity: 0`. **Confirmed pre-existing** — reproduced on the *original*, untouched heading too (`git stash` back to before this session's edit), so this is not a regression from the copy change.
+
+**Root cause not isolated. What is confirmed, by instrumenting the shared `IntersectionObserver` in `initializeAnimationEngine()` (`js/indexJS.js`):** the observer callback fires **exactly once** for this element, at page load, correctly reporting `isIntersecting: false` (it genuinely was off-screen). It **never fires again**, even after real incremental mouse-wheel scrolling (not just a `scrollIntoView()` jump) brings the element fully into the viewport for several seconds. An immediately adjacent sibling using `data-animate="fadeUp"` reveals normally under the same observer, same page, same scroll. `clip-path: inset(0 0 100% 0)` (the `clipReveal`-specific starting state, in `css/styleIndex.css` around line 827) interacting with the observer's intersection computation is the leading suspect, untested.
+
+**`clipReveal` was the only usage of this animate-type anywhere in `index.html`** (confirmed via `grep -c 'data-animate="clipReveal"'` → 1, before the fix). The fix removed that one usage rather than debugging the shared mechanism — `.contactHeading` now carries no `data-animate` attribute and is plain content inside `.contactCaption`, appearing the instant the container's own (separately confirmed-working) `fadeUp` reveal fires.
+
+**This means the underlying bug is still live and unfixed.** `clipReveal` is a real, working-as-designed CSS rule and JS path that **will silently make any future element permanently invisible** if reused, with no console error and no visible symptom beyond "the text never shows up." If a future session wants a clip-path-style reveal, either debug this mechanism properly first, or use `fadeUp`/`scaleIn`/`slideLeft`/`slideRight` instead — all confirmed working.
+
+### 59. ~~Hero typing animation could freeze permanently mid-character~~ — **FIXED 2026-08-29, verified 21/21**
+
+Reported independently by Aron and a real site visitor: the hero's typed headline ("TAKE BACK YOUR [phrase]") intermittently froze mid-word — the reported example was `"TAKE BACK YOUR P"`.
+
+**Root cause: the entire typing chain had no error handling anywhere.** `runHeroDuetLoop()` → `typeHeroPhrase()` / `deleteHeroPhrase()` → `runHeroTypedSequence()` → its own `requestAnimationFrame` callback — zero `try/catch`, zero `.catch()`, and no global `window.onerror` / `unhandledrejection` handler anywhere on the site. Any exception, from any cause (a stray DOM error, a conflicting browser extension, memory pressure, a page-translate tool reparenting the live text node), would silently and permanently kill the `for (;;)` loop, leaving the last partial commit on screen forever with only a console line no real visitor would ever see.
+
+**Reproduced directly**, not just theorized: injected a controlled fault into the animation's own `requestAnimationFrame` callback, timed to fire once the typed line already had 6+ characters. Result: froze at `"YOUR P"` — concatenated with the fixed "TAKE BACK" headline, that's `"TAKE BACK YOUR P"`, matching the reported symptom almost verbatim.
+
+**Fixed with two independent layers** (full detail in the 2026-08-29 engineering journal entry and `projectState.md`'s *Uncommitted Work*):
+
+1. **Per-cycle `try/catch` in `runHeroDuetLoop`.** On any caught error, writes the complete current phrase (never partial) and continues cycling. Required a `handleFrameOrReject` wrapper around the rAF callback, because an exception thrown directly inside a native `requestAnimationFrame` callback does **not** reject the promise awaiting it — it just orphans that promise forever, a subtlety that made the first attempt at this fix silently fail its own test.
+2. **An independent watchdog** (`checkHeroTypedWatchdog`, `setInterval` every 2s, 7s elapsed-since-last-commit threshold) for the failure class the try/catch structurally cannot see: a scheduled frame that simply never fires because something outside the page's own control (the translate-tool scenario) reparented or replaced the live text node. `writeHeroTypedText()` also now verifies its cached node is still attached to the live element and rebuilds it if not.
+
+**Do not fold these two layers together** — they were tested separately and cover genuinely different failure classes; a single mechanism did not catch both in testing.
+
+**Uncommitted as of this closeout** — `js/indexJS.js` only, no CSS/HTML changes, no performance work done or needed. See `projectState.md` for exact commit status.
+
+### 60. Google Fonts + unminified CSS re-confirmed render-blocking against live production — opened 2026-08-30, not new
+
+**Not a new finding — a fresh measurement against the real host**, tied to a specific commit. Item 44 already identified this (M1: Google Fonts render-blocking) from a local gzip-simulated server. This session ran Lighthouse directly against `https://bluegridlandsolutions.com` (`ab44558`, mobile + desktop, full category set) and got matching results from production itself: **Performance 75 mobile / 95 desktop**, driven by the Google Fonts stylesheet (~813ms) and unminified `styleIndex.css` (~505ms, ~20KB potential) both blocking first paint. LCP element on mobile is `.heroCopy` (text), not an image — the responsive image work is holding up under a real audit; zero image-related opportunities flagged. Accessibility/Best Practices/SEO are 100/100/100. No optimization was implemented this session — diagnostic only, per the session's own scope. See item 44 for the ranked fix list; nothing in it needs revision based on this measurement.
+
 ### 52. The video master is gitignored — which means Git is no longer protecting it
 `graphics/videos/IntroVideoFromChase.mp4` (9,018,260 B, MD5 `63f9fa5255a4840db6abbd29d5dfd950`) is Chase's original recording and is **excluded from the repository** by an explicit `.gitignore` rule. The reasons are sound: nothing on the site loads it, the site is published with GitHub Pages so committing it would make a 9MB file both permanently resident in Git history and publicly downloadable, and a later deletion would not shrink the history. It was **never committed**, so no history rewrite is needed — verified with `git log --all -- <path>` returning zero commits.
 
@@ -660,7 +695,9 @@ Also still true and now slightly odd: **`CNAME` is still in the repository.** Ha
 
 Archived to `ClientSites/_archive/client_BluegridLandSolutions/video/`, verified byte-identical, with a README recording the codec facts and the display-matrix trap. **That archive is on the same machine and the same disk as the working copy.** It protects against `git clean` and a repository reset, not against drive failure. **An offsite copy is still owed.**
 
-### 53. `_qa/` IS PUBLICLY SERVED ON NETLIFY — the Jekyll assumption died with the host change
+### 53. ~~`_qa/` IS PUBLICLY SERVED ON NETLIFY~~ — **RESOLVED 2026-08-28, `robots.txt` `Disallow: /_qa/` shipped in `14267f4`**
+**Fixed with the cheapest of the three options this item listed** — one line in `robots.txt` excluding crawlers from `/_qa/`. This stops indexing; it does not make the directory unreachable, which was never the goal (nothing in it is secret). `_qa/README.md`'s Jekyll claim below is still wrong on that specific point and was not corrected as part of this fix — low priority, the file's practical instructions (`node _qa/runAll.js`) are unaffected.
+
 **The premise of this item was voided on 2026-08-28.** `_qa/` was named with a leading underscore because GitHub Pages runs Jekyll, and Jekyll does not copy `_`-prefixed directories into the built site. **Netlify does not run Jekyll**, and there is no `netlify.toml`, `_redirects` or `_headers` in this repository — verified 2026-08-28. So the folder is served, at the Netlify URL now and at the apex the moment DNS moves.
 
 **Severity: low, but decide it before the sitemap is submitted.** Nothing in `_qa/` is secret — it is inert test JavaScript, and `node_modules` is gitignored — but it is crawlable, and Search Console indexing is step 8 of the launch sequence.

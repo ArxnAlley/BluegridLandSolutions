@@ -1,16 +1,31 @@
 # Project State — BlueGrid Land Solutions
 
-**Last updated:** 2026-08-28 (launch day — **geographic SEO + video committed and pushed as `e380746`**, site deployed to **Netlify**, responsive conversion UX corrected locally and not yet committed)
+**Last updated:** 2026-08-30 (session closeout — hero Call Now CTA, hero typing-animation audit + failsafe, and a final-CTA-section slogan rewrite that also fixed a pre-existing invisible-heading bug; the last two are uncommitted, see *Uncommitted Work*)
 **Repository:** `c:/Dev/NuloWorkspace/ClientSites/client_BluegridLandSolutions/`
 **Branch:** `main`
 **Remote:** `origin` → `https://github.com/ArxnAlley/client_BluegridLandSolutions.git`
-**Host:** **GitHub Pages.** See *Hosting* below.
-**Last CODE commit:** `2080723` — "Footer links and devCredit fix" (author arxnalley). **34 files, +702 / −542** — the 33 pages plus `css/styleIndex.css`, carrying the footer legal-row restructure. Committed and pushed by Aron.
-**Closeout commit:** `d6f36cc` — "Session closeout: footer legal row, favicon decision, Apps Script deployed" (2026-08-27). **Docs only, local, unpushed.** HEAD is the small `docs:` commit recording this hash immediately after it — a hash cannot cite itself, so this repo records it in a follow-up, as it did at `0095da0` and `7f056c4`.
-**Sync:** `main` was **level with `origin/main`** before this closeout commit — verified with `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`. Not carried over from notes. Commit hashes recorded before 2026-08-15 no longer resolve — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted here.
-**HEAD:** `e380746` — "Prepare BlueGrid production launch". **50 files, +3357 / −421.** Committed *and pushed* by Aron on 2026-08-28; `git rev-list --left-right --count origin/main...HEAD` returns `0 0`, so `main` and `origin/main` agree. This is the commit that carried the geographic SEO architecture, the Chase intro video, and the `_qa/` suite.
+**Host:** **Netlify** (project `bluegrid-land-solutions`), confirmed live and serving `https://bluegridlandsolutions.com` — this session ran Lighthouse directly against that URL and got real, current responses. See *Hosting* below for what's still unconfirmed about the migration (DNS ownership, `www`→apex, deep-404 behavior).
+**HEAD:** `ab44558` — "Update homepage SEO title". `git fetch` + `git rev-list --left-right --count origin/main...HEAD` → `0	0`: **`main` and `origin/main` agree**, verified this session, not carried over from notes.
+**Recent commits (newest first), all by `arxnalley`, all pushed:**
+| Commit | Subject |
+|---|---|
+| `ab44558` | Update homepage SEO title — `<title>` now names Scioto County, OH |
+| `14267f4` | Exclude QA files from crawlers — `robots.txt` gained `Disallow: /_qa/` |
+| `7bd2d49` | Hide mobile actions at footer — sticky CTA bar now hides once the footer/devCredit enters view |
+| `3ab780b` | Finalize responsive hero layout |
+| `e9e97c5` | Refine mobile hero vertical layout |
+| `7dc8ba7` | Checkpoint responsive hero refinements — large combined commit; also carried a docs update, which is why `projectState.md`/`technicalDebt.md`/`engineeringJournal.md` in git history look different from the versions on disk before this closeout |
+| `e380746` | Prepare BlueGrid production launch — geographic SEO architecture, the Chase intro video, the `_qa/` suite, and the Netlify migration |
 
-**Working tree:** **NOT clean, and deliberately so.** Three tracked files hold the responsive conversion-UX correction, finished and verified but **not committed** — `css/styleIndex.css`, `index.html`, `js/indexJS.js`. Full detail in *Uncommitted Work* below. Plus the two long-standing untracked logo files, still neither tracked nor ignored: `graphics/logos/masterFavicon_BG.png` (the rejected wordmark favicon master, kept as an alternate logo concept to show Chase — see *Waiting on Client*) and `graphics/logos/TPname.png`. **Both remain a `git add -A` hazard.**
+**Commit hashes recorded before 2026-08-15 no longer resolve** — history was rewritten during the production deployment. Re-derive with `git log`, never trust a hash quoted in older prose below this header.
+
+**Working tree:** **NOT clean.** Three tracked files hold **two unrelated, both-finished, both-uncommitted pieces of work** — full detail in *Uncommitted Work* below:
+- `js/indexJS.js` — the hero typing-animation failsafe (audited and fixed this session; a real, reproduced bug, not speculative)
+- `index.html` + `css/styleIndex.css` — the final pre-footer `#contact` section's slogan rewrite, which also fixed a pre-existing bug where its headline was permanently invisible
+
+Plus the same two long-standing untracked logo files as before, still neither tracked nor ignored: `graphics/logos/masterFavicon_BG.png` (rejected favicon master, kept to show Chase as an alternate logo concept) and `graphics/logos/TPname.png`. **Both remain a `git add -A` hazard** — stage by name.
+
+Also untracked, **not mine, not part of any session's code work**: `seoBaseline_8.29.26/` (a handful of PNGs, dated 2026-08-29). Presumed Aron's own SEO research artifact. Left alone.
 
 ## THE OWNER INTRODUCTION VIDEO IS LIVE — AND THE ROTATION WARNING WAS WRONG
 
@@ -154,27 +169,28 @@ header and a later section disagree, this header is right.
 
 ## Current Phase
 
-**SHIPPED. The repository side is finished and published.**
-
-Hardening, the performance pass and the representative browser QA are all
-complete, committed and pushed. The working tree is clean and there is no
-staged-but-unshipped work left anywhere in this repository.
+**LIVE on Netlify. Repository side has two finished, uncommitted pieces of
+work — see *Uncommitted Work*.** Chase's intro video shipped long ago
+(`e380746`, still in `HEAD`) — do not go looking for it as pending.
 
 **The Google-side steps are DONE** (Aron, 2026-08-27 — the config tab confirmed,
 `config.gs` and `validation.gs` pasted, deployment updated with New version).
 What remains between here and handing the site to Chase is **not repository
-work**, with one exception:
+work**, with two exceptions:
 
-1. **Chase's intro video** — the one real content task left, and it is waiting
-   on him to email the file. See *NEXT SESSION SHOULD START HERE*.
+1. **Commit and, if desired, push today's two uncommitted changes** (the hero
+   typing-animation failsafe and the `#contact` section slogan fix) — see
+   *Uncommitted Work* and *NEXT SESSION SHOULD START HERE*.
 2. **The Chase review** — he has still never seen the site end to end.
 3. **Search Console** — property verification and sitemap submission.
 4. **Google Business Profile verification, and the Bing postcard/PIN** — both
    external, client-side, and unresolved as far as this repository knows.
 
 **Three consecutive closeouts opened with "resolve the working tree" and the
-ones after them with "Aron must do the Google-side steps". Both are finished.
-Do not go looking for either again.**
+ones after them with "Aron must do the Google-side steps". Both were finished
+once, then this session's audit + fix work reopened the working tree again —
+that's expected, not a regression. Do not go looking for the Google-side steps
+again; they're still done.**
 
 **Historical note (superseded):** the line below described the state at the
 2026-08-15 closeout and is kept because the phase table under it is still
@@ -230,6 +246,12 @@ accurate.
 | **Footer legal row moved above the divider** (`2080723`) | **Complete 2026-08-27** |
 | **Favicon artwork decision — mountain/tree everywhere** | **Complete 2026-08-27; deployed set restored from `HEAD`** |
 | **Google-side config + Apps Script redeploy** (Aron) | **Complete 2026-08-27 — reported, not repo-verifiable** |
+| **Homepage geographic target — Scioto County / Portsmouth** | **Complete and shipped** (`ab44558` title, plus hero eyebrow/subtext copy) — see *Open Decisions* item 1 |
+| **`_qa/` excluded from crawlers** (`robots.txt` `Disallow: /_qa/`) | **Complete**, `14267f4` |
+| **Sticky mobile CTA bar hides at the footer** | **Complete**, `7bd2d49` |
+| **Hero Call Now CTA — desktop + burger-nav band + narrow-mobile containment** | **Complete**, `7dc8ba7`→`3ab780b` |
+| **Hero typing-animation freeze — audited, reproduced, fixed with a two-layer failsafe** | **Complete, verified 21/21, uncommitted** — see *Uncommitted Work* |
+| **Final `#contact` section slogan rewrite + fix for a permanently-invisible-heading bug** | **Complete, verified 22/22, uncommitted** — see *Uncommitted Work* |
 
 **No launch blockers remain, and the P0 is closed.** The Google Sheet config check and the Apps Script redeploy were both completed by Aron on 2026-08-27.
 
@@ -695,70 +717,93 @@ Created `docs/sessionCloseout.md` — a local, gitignored workflow document inst
 
 ## Currently In Progress
 
-**Nothing is in flight.** The owner introduction video — the single item the last
-three closeouts were waiting on — is built, verified and **uncommitted**. The
-next task is a new one: the geographic SEO audit.
+**Two finished, verified, unrelated pieces of work sit uncommitted.** Both are
+done — nothing half-built, no known-broken state — left uncommitted so Aron can
+review before they ship. The hero Call Now CTA work that previous sessions left
+uncommitted (see prior versions of this file if that history is ever needed)
+**is now fully committed** — `7dc8ba7` through `ab44558`, confirmed pushed and
+level with `origin/main`. Do not go looking for it as pending work.
 
-### Uncommitted Work — the responsive conversion UX correction
+### Uncommitted Work
 
-**Everything from the previous session is committed and pushed** as `e380746`.
-What remains in the tree is one focused change, made after the Netlify deploy
-exposed a conversion gap on tablets, verified 216/216 in a real browser and
-left uncommitted at Aron's instruction.
+**1. Hero typing-animation failsafe — `js/indexJS.js` only.**
 
-**Modified (tracked) — COMMIT (3):**
+A real bug, not speculative: the hero's typed headline ("TAKE BACK YOUR
+[phrase]") could freeze permanently mid-character, reported by both Aron and a
+real visitor. Audited this session (full trace in the 2026-08-29 journal
+entry) and traced to a structural gap — the entire typing loop
+(`runHeroDuetLoop` → `typeHeroPhrase` → `runHeroTypedSequence`, all the way
+down to the `requestAnimationFrame` callback) had **zero error handling
+anywhere**, so any exception, from any cause, silently killed the loop forever
+with the last partial commit stuck on screen. **Reproduced directly** with a
+controlled fault injection: froze at `"TAKE BACK YOUR P"`, matching the
+reported symptom almost verbatim.
 
-| File | Why |
-|---|---|
-| `css/styleIndex.css` | Header phone chip re-hidden in burger mode; the bottom action bar moved out of the 640px block into a top-level `@media (max-width: 1200px)`; hero compact row rebuilt as a 2-column grid; button padding reduced below 430px. |
-| `index.html` | Removed the redundant `Get My Free Estimate` hero button. `See Transformations` is now the hero's single content-side CTA. |
-| `js/indexJS.js` | `mobileActionMediaQuery` 640px → 1200px; bar visibility retied from "header hid on scroll" to "hero has left the viewport". |
+Fixed with two independent layers, neither of which touches the existing
+pause/resume/`IntersectionObserver`/reduced-motion architecture:
 
-**Untracked — MUST STAY OUT (2):**
+- **Per-cycle recovery** in `runHeroDuetLoop` — a `try/catch` around each
+  phrase's cycle; on failure, writes the complete current phrase and keeps
+  cycling. Required routing `requestAnimationFrame`'s callback through a small
+  `handleFrameOrReject` wrapper first, because an exception thrown directly
+  inside a native rAF callback does not reject the promise awaiting it — it
+  just orphans it. `handleFrame`'s own body is untouched, byte-for-byte.
+- **An independent watchdog** (`checkHeroTypedWatchdog`, a 2s-interval check
+  against a 7s elapsed-since-last-commit threshold) for the failure class the
+  try/catch structurally cannot see — a scheduled frame that simply never
+  fires (e.g. a page-translate tool or similar reparenting the live text
+  node). `writeHeroTypedText` also now verifies its cached text node is still
+  attached to the live element and rebuilds it if not.
 
-`graphics/logos/TPname.png` and `graphics/logos/masterFavicon_BG.png`. Neither
-is tracked and **neither is gitignored**, so `git add -A` or `git add .` would
-sweep both into the launch commit. Stage the three files by name.
+**Tested 21/21**: normal cycling, tab hide/show, hero scroll out/in, resize
+across breakpoints, reduced motion, an internal-exception fault (recovers with
+**zero** visible error, absorbed as a handled rejection), and an
+external-stall fault matching the original bug (recovers via the watchdog
+within the window, stays correct afterward). Full script is in a session
+scratchpad, not the repo — see `technicalDebt.md` item 10i, this is the same
+standing gap.
 
-### What the correction actually changed
+**2. Final `#contact` section slogan — `index.html` + `css/styleIndex.css`.**
 
-**One conversion pattern in burger mode, not two.** A Call chip was briefly
-added to the burger header and then removed on review: it created a second
-competing pattern, and at 324px it crowded the wordmark. The header is back to
-`[logo] [hamburger]` at every width ≤1200px.
+Requested copy change to the pre-footer machine-image CTA section. Two rounds:
 
-**The bottom action bar now covers the whole burger range.** It previously
-appeared only at ≤640px, which left **641–1200px — every tablet and small
-laptop — with the burger nav and no persistent conversion action at all.**
-That was the real defect. `.backToTopButton` deliberately stayed at 640px.
+- **First pass** removed the section's dark/glass `.contactCaption` container
+  entirely and put the new heading directly over the machine photo —
+  **wrong**, per Aron's correction: bad contrast, and it exposed a second,
+  pre-existing bug (below).
+- **Second pass (current state)** restored `.contactCaption` and put all three
+  new lines inside it: `.sectionKicker` "One Machine. One Man." (small,
+  letter-spaced, blue — the site's existing kicker treatment) above a two-line
+  `.contactHeading` "Claim Your Territory." / "Unleash Your Potential." (the
+  section's original large bold headline style, split across two lines via a
+  new `.contactHeadingLine { display: block; }` rule — same pattern
+  `.estimateHeadingLine` already uses for the modal). The old "24 hours"
+  copy paragraph is gone, replaced, not just removed.
 
-**The bar is tied to the hero, not to the header.** It used to appear whenever
-the header hid on a scroll down, which could cover the hero's own Call and
-Estimate controls. It now waits until the hero leaves the viewport and hides
-again on return.
+**The pre-existing bug, found and fixed as part of this:** `.contactHeading`
+carried `data-animate="clipReveal"`, and that animation type is — provably —
+**permanently broken**. Confirmed on the *original*, untouched heading too
+(via `git stash`), with real incremental scroll (not just a jump), and by
+instrumenting the page's `IntersectionObserver`: it fires exactly once, at
+page load (correctly reporting not-yet-in-view), and **never fires again**
+once the element actually scrolls into view — while an adjacent sibling using
+`fadeUp` reveals normally. Root cause not isolated (clip-path's interaction
+with the observer is the leading suspect); `clipReveal` was the *only* usage
+of that animate-type anywhere on the site, so the fix was to stop using it
+here rather than debug the shared mechanism. `.contactHeading` now carries no
+`data-animate` of its own — it's plain content inside `.contactCaption`, and
+appears the instant the container's own (separately confirmed-working)
+`fadeUp` reveal fires. See `technicalDebt.md` (new item) — **if `clipReveal`
+is ever reused anywhere else, expect the same permanent-invisibility failure.**
 
-**The hero compact row is two rows, not three-across.** `Call Chase` and
-`Get Estimate` sit side by side; the property-address field spans the full
-width beneath them. The form got `display: contents` so its input and button
-become grid items — the form element, its submit handler and the estimate flow
-are untouched.
+**Tested 22/22** (desktop 1440px + mobile 390px, real incremental scroll):
+heading and kicker nested correctly, heading `opacity: 1` / `clip-path: none`
+after scrolling to it, container's own reveal fires, CTA buttons and machine
+image unchanged, zero console errors.
 
-**What has and has not been seen in a browser** — still the honest distinction,
-and it is now better than it was:
-
-- **Seen and verified in a real browser:** 8 representative pages across 7
-  viewports (1440/1024/820/768/430/390/375) in the 2026-08-20 QA — homepage,
-  a service page, a location page, an Insights article, Company, FAQ, a legal
-  page and the custom 404. Plus 18 breakpoint widths, the mega menus, mobile
-  drawer, estimate modal and its five-step progression, address prefill, FAQ
-  accordion, consent controls, process board, hero typing and sweep, and 404
-  recovery.
-- **Still unseen by a human:** the remaining 25 pages' copy, and the whole site
-  on real hardware. Every viewport above is Chrome device emulation, not a
-  phone in someone's hand. **Chase has still never seen the site end to end.**
-
-**Outside the repository:** nothing is outstanding. Production runs the current
-Apps Script version and both config emails are confirmed, as of 2026-08-27.
+**Both pieces:** `node --check js/indexJS.js` passes; `node _qa/runAll.js` →
+**90/90** (56 video + 34 sitewide regression), run fresh at the end of this
+session. Nothing pushed, nothing deployed — Netlify is still serving `ab44558`.
 
 ---
 
@@ -820,7 +865,7 @@ in the same uncommitted tree:
 7. **Chase review / major revision pass** — expect a real round of change requests.
 8. **Search Console** — property verification and sitemap submission.
 9. **Competitor and search-intent research** — never done, and the homepage geographic decision is waiting on it. See *Open Decisions*.
-10. **Lighthouse mobile + desktop** — hero images are full-resolution `2048x1536` with no `srcset`; Google Fonts loads render-blocking.
+10. ~~**Lighthouse mobile + desktop**~~ **RUN AGAINST LIVE PRODUCTION 2026-08-29/30 (`ab44558`).** The "hero images full-resolution, no `srcset`" claim that used to sit here was **wrong as of this measurement** — responsive images are in place and Lighthouse flags zero image opportunities; the mobile LCP element is text (`.heroCopy`), not an image. What's still genuinely open, confirmed live: **Performance 75 mobile / 95 desktop**, driven by render-blocking Google Fonts (~813ms) and render-blocking unminified `styleIndex.css` (~505ms, ~20KB). Matches `technicalDebt.md` item 44's M1 finding exactly — not a new discovery, a fresh confirmation against the real host. Accessibility/Best Practices/SEO are 100/100/100.
 11. **Tree / brush clearing page** — `technicalDebt.md` item 3b. First-party supported by Chase's own advertising and the only advertised service with no page.
 12. **Location pages rows 7-11** — Gallipolis OH, Waverly OH, Greenup KY, Louisa KY. (Jackson shipped in the P0 pass.) Build to the shipped nine, not a template.
 13. **Decide West Union, OH and Flatwoods, KY** — advertised in the nav but absent from `seoPlan.md`'s 11-city table.
@@ -912,10 +957,8 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 **Still genuinely open:**
 
-- **NEW — decide whether to commit the video work.** It is finished, verified
-  90/90, and deliberately left uncommitted. Every file and its classification is
-  in *Uncommitted Work* above. Nothing else should be built on top of it until
-  this is settled.
+- ~~**Decide whether to commit the video work.**~~ **RESOLVED.** It shipped in `e380746` and is still in `HEAD` — confirmed via `git ls-tree`. Do not go looking for this again.
+- **NEW — decide whether to commit and/or push this session's two uncommitted changes** (hero typing-animation failsafe, `#contact` section slogan fix). Both are finished and verified — see *Uncommitted Work*.
 - **NEW — sign off the caption wording**, or send it to Chase. Until then the
   track stays attached but not defaulted on, which is the deliberate current
   state. Enabling it is one line. Full transcript in the 2026-08-27 journal
@@ -950,7 +993,7 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 ## Open Decisions — recorded, not implemented
 
-**1. Homepage geographic target.** Audited 2026-08-15 in response to a proposal to make Wheelersburg the homepage's primary signal. Recommendation: **keep the homepage regional.** There is no Wheelersburg page; Portsmouth already claims Wheelersburg in copy *and* FAQ schema; the homepage is the only page holding the two-state region; and `LocalBusiness` declares 12 counties with no address. The proposed eyebrow was rejected; the proposed supporting copy was approved for adding "land clearing", which is absent from the eyebrow today. **Full reasoning in the 2026-08-15 journal entry. Aron has not ruled.**
+**1. Homepage geographic target — PARTIALLY DECIDED, and inconsistent as of `ab44558`.** The 2026-08-15 audit recommended keeping the homepage regional. **That recommendation was not followed for the title and hero copy**: the `<title>` now reads "Forestry Mulching & Land Clearing | Scioto County, OH | BlueGrid", the hero eyebrow names "Scioto County, Ohio" specifically, and the hero subtext leads with "serving the Portsmouth area" before the regional phrase. **This was not accompanied by a schema change** — `LocalBusiness.areaServed` still declares the full 12-county two-state list, unchanged. So the site currently makes a narrow claim in its most visible metadata and a wide claim in its structured data. **Nobody has ruled on whether this mismatch is intentional or an oversight.** Worth a direct question next session rather than assuming either direction.
 
 **2. Competitor and search-intent research has never been done.** It is item 9 of the old Remaining Launch Work list and remains outstanding. **There is no search-volume, keyword-difficulty or competitor data anywhere in this repository** — the only prioritisation rationale ever recorded is one unquantified line in `seoPlan.md`. Any further geographic or keyword decision is being made without it.
 
@@ -962,51 +1005,49 @@ the leads and opens the photographs. Do not collapse them into one setting.
 
 ## NEXT SESSION SHOULD START HERE
 
-**THE SITE IS ON NETLIFY AND THE DNS SWITCH IS THE LAST STEP. Do not change
-DNS until the responsive fix is committed and redeployed.**
+**First task: decide what to do with today's two uncommitted, finished changes.**
 
-1. **Review the responsive correction and commit it.** Three tracked files:
-   `css/styleIndex.css`, `index.html`, `js/indexJS.js`. **Stage them by name.**
-   `git add -A` would also sweep in `graphics/logos/TPname.png` and
-   `graphics/logos/masterFavicon_BG.png`, which are untracked *and* not
-   gitignored.
+1. **Review and commit (or ask for changes to) the two uncommitted pieces of
+   work.** Three tracked files: `css/styleIndex.css`, `index.html`,
+   `js/indexJS.js`. **Stage by name, not `git add -A`** —
+   `graphics/logos/TPname.png` and `graphics/logos/masterFavicon_BG.png` are
+   still untracked *and* not gitignored, and `seoBaseline_8.29.26/` (Aron's,
+   unrelated) is also untracked. Full description of both changes, what was
+   tested, and what's still unverified, is in *Uncommitted Work* above.
+   - The typing-animation failsafe has **no visual difference** — it's a
+     correctness/robustness fix for a bug that was only ever intermittent, so
+     there's nothing to visually re-check beyond the 21/21 automated result.
+   - The `#contact` section change **does** have a visual result worth a human
+     look before committing — screenshots were taken this session but nobody
+     has seen it in a real browser on a real device.
 
-2. **Visually confirm at ~712px, ~390px and ~324px** before committing. Those
-   three are the widths that exposed the original problems. The automated
-   suite passes 216/216, but nobody has looked at 712px on a real tablet.
+2. **If committing, split or combine at your discretion** — the two changes
+   are unrelated to each other (one is `js/indexJS.js` only, the other is
+   `index.html` + `css/styleIndex.css` only), so they can be two commits or
+   one; nothing about either depends on the other.
 
-3. **Push, then verify the Netlify redeploy** and smoke-test the preview.
+3. **Do not push without being asked.** Nothing in this session's instructions
+   authorized a push, and none was made. `main` and `origin/main` currently
+   agree (`0 0`); committing locally will put local ahead until pushed.
 
-4. **Then, and only then, connect `bluegridlandsolutions.com`** — replace the
-   GitHub Pages records at Namecheap with Netlify's.
+4. **Decide the geographic-target inconsistency** — title/hero copy now name
+   Scioto County/Portsmouth specifically, `LocalBusiness` schema still
+   declares the full 12-county region, unchanged. See *Open Decisions* item 1.
+   Nobody has said whether this is intentional.
 
-5. **Verify after the switch**, in this order:
-   - HTTPS resolves and the certificate covers apex *and* `www`
-   - **`www` → apex still redirects.** Pages did this for free; Netlify must be
-     configured to. If it does not, every canonical on the site disagrees with
-     the served URL. See *Hosting*.
-   - **A deep bad path still serves `404.html` without a redirect** — e.g.
-     `/locations/does-not-exist.html`. Pages preserved the base URL, which is
-     why every path in `404.html` is root-absolute. Not yet re-verified on
-     Netlify.
-   - The estimate form posts and a lead lands in the Sheet
-   - GA4 and Clarity both receive traffic
-   - `sitemap.xml` reachable; submit in Search Console and request indexing
+5. **Still open, unrelated to this session:** Google Business Profile
+   verification (created but unverified), the Bing postcard/PIN, Chase's
+   caption sign-off, an offsite copy of the video master, and whether DNS has
+   ever been pointed at Netlify — **this repository has no way to check DNS
+   status**; if a future session needs to know, ask, don't assume either
+   answer from anything written here.
 
-6. **Decide `_qa/` exposure before submitting the sitemap.** Netlify does not
-   run Jekyll, so `_qa/` is publicly served — the opposite of what its README
-   claims. Nothing in it is secret, but it is crawlable. One line in
-   `robots.txt`, a `netlify.toml` exclusion, or a shrug. `technicalDebt.md`
-   item 53. Cheapest moment to settle it is before indexing is requested.
-
-7. **Still open, unchanged by launch:** Google Business Profile verification
-   (created but unverified — the local pack is unavailable until it is), the
-   Bing postcard/PIN, Chase's caption sign-off, and an offsite copy of the
-   video master. All external or client-side.
-
-8. **Do not rerun or rework the geographic SEO** unless an actual defect turns
-   up. It is committed, verified, and the reasoning is in the 2026-08-27
-   journal entry.
+6. **Do not re-run the Lighthouse audit from scratch** — it was run against
+   live production this session (`ab44558`, both mobile and desktop, full
+   category set) and the numbers are recorded above and in the 2026-08-29
+   journal entry. Re-run only after a real deploy that could plausibly change
+   them (e.g., self-hosting fonts, minifying CSS — both still open, see
+   `technicalDebt.md` item 44).
 
 ### Do NOT redo any of this
 
@@ -1027,8 +1068,12 @@ DNS until the responsive fix is committed and redeployed.**
 - **The Google-side work is finished.** Config emails confirmed, `config.gs`
   and `validation.gs` pasted, deployment updated with New version. Three
   closeouts carried this as the P0. It is done.
-- **The working tree is resolved**, and has been since `90f10ec`. Do not go
-  looking for uncommitted work.
+- **The working tree was resolved as of `ab44558`** (the hero Call Now work,
+  the sticky-bar footer fix, the SEO title, the `robots.txt` exclusion — all
+  committed and pushed). It is **not clean right now** — two new, unrelated,
+  finished pieces of work are uncommitted. See *Uncommitted Work*. Don't
+  confuse "the tree was clean at some point" with "there's nothing to
+  commit today."
 - **The favicon question is settled: the mountain/tree artwork, everywhere.**
   A second package built on the circular BLUEGRID wordmark was measured against
   it and rejected; the deployed set was restored from `HEAD` and the comparison
@@ -1057,3 +1102,25 @@ DNS until the responsive fix is committed and redeployed.**
 - **The favicon artwork, the six JPEG holdouts, the double-scrollbar fix, the
   699px process breakpoint and the root-absolute `404.html`** all still carry
   their original do-not-touch notes. They have not changed.
+- **The hero typing-animation pause/resume/hold architecture is unchanged and
+  should stay that way.** The 2026-08-29 failsafe work (`heroPauseSubscribers`,
+  `waitForHeroTiming`, `heroTimingIsHeld`, the forward-sweep/reverse-dissolve
+  promise guards) is additive — a `try/catch` in `runHeroDuetLoop`, a
+  `handleFrameOrReject` wrapper around the rAF callback, and an independent
+  watchdog. **Do not fold the watchdog's recovery into the try/catch or vice
+  versa** — they cover genuinely different failure classes (an exception vs. a
+  scheduled frame that never fires at all), and testing showed the try/catch
+  alone does not catch the second class.
+- **`data-animate="clipReveal"` is provably broken and now unused anywhere on
+  the site.** Confirmed via `IntersectionObserver` instrumentation: it fires
+  once at page load, correctly reporting not-yet-visible, and never fires
+  again once the element scrolls into view. **Do not apply `clipReveal` to any
+  new element without fixing the root cause first** — the fix applied to
+  `.contactHeading` was to stop using it, not to repair the shared mechanism,
+  so the underlying bug is still there for the next thing that reaches for it.
+- **The `#contact` section's dark/glass `.contactCaption` container is back in
+  active use.** Do not remove it again for a future copy change — that was
+  tried this session and reverted on explicit correction: it broke contrast
+  against the machine photo and exposed the `clipReveal` bug above. Any future
+  copy change to this section should go *inside* `.contactCaption`, matching
+  `.sectionKicker` + `.contactHeading` (now un-animated, see above).

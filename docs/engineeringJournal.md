@@ -4,6 +4,251 @@ Append-only. Newest entry at the top.
 
 ---
 
+## 2026-08-30 — HERO TYPING FREEZE (AUDITED, REPRODUCED, FIXED), A PRE-EXISTING INVISIBLE-HEADING BUG FOUND WHILE CHANGING #CONTACT'S COPY, AND WHAT SHIPPED IN BETWEEN THAT WAS NEVER WRITTEN UP
+
+Three things landed since the last entry. The first is a retrospective — real,
+shipped, committed work from the days after 2026-08-28 that never got a
+journal entry. The other two are this session's own.
+
+### 0. What shipped and was never journaled: the hero Call Now CTA, end to end
+
+Commits `7dc8ba7` through `ab44558` carry a multi-round hero conversion pass
+that followed the 2026-08-28 tablet-gap fix below. Summarized here because
+nobody wrote it down at the time, and the mechanisms are exactly the kind of
+"why is this line here" a future session would otherwise have to re-derive:
+
+- **Call Now added to the hero**, in two stages: first only in the
+  1081–1200px band (burger nav active, desktop estimate card still visible —
+  a band that had a header phone chip at neither width and no hero-side call
+  action), then widened to show at every width above 1080px once it became
+  clear "See Transformations" alone was reading as the primary conversion
+  action when it's a proof link, not a CTA. `.heroActionsCallCta`'s
+  `display: none` moved to a plain base rule (shown wherever `.heroActions`
+  itself is shown); the narrower band-only media query was deleted once it
+  became redundant.
+- **A real narrow-width (≤354px) overflow bug, found and fixed.** `.heroInner`
+  collapses to a single grid column below 1080px; a bare `1fr` track defaults
+  to `minmax(auto, 1fr)`, and once nothing inside could shrink further, that
+  floor forced the column wider than the viewport and silently spilled content
+  past its own (correctly-sized) box — clipping the right edge of the Get
+  Estimate button and pushing the third proof stat out of view, with no
+  horizontal scrollbar to reveal it (`overflow-x: hidden` absorbed it).
+  Fixed with `minmax(0, 1fr)` — an idiom already used elsewhere in this
+  stylesheet. A second, same-shape bug one level down (`.heroStats`'s own
+  flex row didn't shrink below its label's full unwrapped width) needed the
+  matching flex fix, `min-width: 0` on `.heroStat`.
+- **Vertical distribution inside the hero was tried three different ways**
+  before landing: `justify-content: space-between` on `.heroContent` (correct
+  idea, but interacted awkwardly with per-child margins), then
+  `margin-top: auto` on `.heroStats` alone (created one large dead gap),
+  before settling on explicit `margin-bottom`/`margin-top` tuning on
+  `.heroStats` and `.heroCopy` and a `.heroKicker` margin bump — small,
+  boring, and it works. If a future session finds `space-between` or
+  `margin-top: auto` anywhere in this block, it was tried and reverted; don't
+  re-derive that path.
+
+**None of this touched the typing animation or the JS pause/resume system** —
+it's all CSS plus the one small addition to `index.html` for the Call Now
+anchor.
+
+### 1. The hero typing animation could freeze permanently — audited, reproduced, fixed
+
+Reported independently by Aron and a real visitor: the typed headline froze
+mid-word. The example given was `"TAKE BACK YOUR P"`.
+
+**Lighthouse first, as a baseline unrelated to the bug report.** Ran against
+live production (`https://bluegridlandsolutions.com`, commit `ab44558`,
+mobile + desktop, full category set, real Chrome via `npx lighthouse`, not a
+local server): **Performance 75 mobile / 95 desktop**, Accessibility/Best
+Practices/SEO 100/100/100 both. Mobile LCP 4.6s, driven by render-blocking
+Google Fonts (~813ms) and unminified `styleIndex.css` (~505ms) — matches
+`technicalDebt.md` item 44's ranked findings exactly, so this is confirmation
+against the real host, not a new discovery. The mobile LCP element is
+`.heroCopy` (text), not an image; zero image-delivery opportunities were
+flagged, so the responsive-image work from earlier sessions is holding up.
+No optimization work was in scope this pass — diagnostic only.
+
+**Then the actual audit.** Traced the complete call graph:
+`runHeroDuetLoop()` → `typeHeroPhrase()` / `deleteHeroPhrase()` →
+`runHeroTypedSequence()` → its `requestAnimationFrame`-driven `handleFrame`.
+Checked every item the brief asked for — timers/rAF, visibility/tab changes,
+resize/breakpoint handlers, competing animations, event listeners, race
+conditions, reduced motion, main-thread blocking — and ruled all of them out
+individually:
+
+- Visibility/`IntersectionObserver` pause-resume is correct and wasn't
+  implicated (the reported freezes happened with the hero on-screen and the
+  tab foregrounded).
+- Only two `resize` listeners exist site-wide; neither touches hero typing
+  state.
+- The before/after image sweep/dissolve already has its own hardened guard
+  from a past session ("a plate that never loads must not strand the loop").
+- `initializeHeroDuet()` runs exactly once, no re-entrant path.
+- Reduced motion bypasses the loop entirely and writes a static complete
+  phrase — cannot freeze mid-type by construction.
+- Lighthouse's own TBT was 0ms on both profiles — no evidence of routine
+  main-thread blocking severe enough to explain a *permanent* freeze.
+
+**What was actually wrong: nothing in the chain could fail safely.** Zero
+`try/catch`, zero `.catch()`, and no `window.onerror` / `unhandledrejection`
+handler anywhere on the site. Any exception, from any cause, would silently
+and permanently kill the `for (;;)` loop, freezing the last partial commit on
+screen with only a console line a real visitor would never see.
+
+**Reproduced directly**, not just argued from code reading: loaded the live
+production page in real Chrome and injected one controlled exception into the
+animation's own `requestAnimationFrame` callback, timed to fire only once the
+typed line already had 6+ characters. Froze at `"YOUR P"` — concatenated with
+the fixed "TAKE BACK" headline, `"TAKE BACK YOUR P"`, matching the reported
+symptom almost verbatim, staying frozen for the full observation window.
+
+**A second, plausible non-exception cause was also identified and defended
+against**, even without a confirmed real-world trigger: browser
+page-translate features and some extensions are well documented to
+reparent/replace live text nodes. `writeHeroTypedText()` caches one `Text`
+node and mutates it via `.nodeValue`; if something external detaches it, the
+writes keep "succeeding" with nothing visible changing and **no console
+output at all** — same frozen appearance, invisible to a naive check.
+
+**The fix, two independent layers, neither touching the existing
+pause/resume/hold architecture:**
+
+1. **Per-cycle `try/catch` in `runHeroDuetLoop`.** On failure: write the
+   complete current phrase (`heroPhraseIndex` hasn't advanced yet, so it's
+   always known), clear the cursor's `isSolid` class so it doesn't look stuck
+   solid, breathe, keep cycling.
+2. **A `handleFrameOrReject` wrapper around the rAF callback in
+   `runHeroTypedSequence`** — required because the first version of the fix
+   (try/catch alone) **failed its own test**: an exception thrown directly
+   inside a native `requestAnimationFrame` callback does not reject the
+   promise awaiting it, it just orphans that promise forever. Routing the
+   call through a wrapper that catches and calls `reject()` is what makes the
+   exception actually visible to the `await` above it.
+3. **An independent watchdog** (`checkHeroTypedWatchdog`, `setInterval` every
+   2s, 7s elapsed-since-last-commit threshold) for the class of failure the
+   try/catch structurally cannot see: a scheduled frame that simply never
+   fires, for any reason, including the translate-tool scenario. 7s is
+   comfortably clear of the longest legitimate silent gap a healthy cycle
+   ever leaves (~2.7s between typing and deleting, ~2.0s between deleting and
+   the next phrase). Gated on `!heroPaused` so it never misfires during a
+   real, intentional pause. `writeHeroTypedText()` was also hardened to check
+   `heroTypedTextNode.parentNode !== heroTypedText` and rebuild the node if
+   it's drifted — same fix that would also self-heal the translate-tool case
+   on the very next write, independent of the watchdog.
+
+**Verified 21/21**, including both fault classes distinctly: an internal
+exception (recovers via the try/catch with **zero** visible error — properly
+absorbed as a handled rejection — and the loop keeps cycling afterward) and an
+external stall matching the original reproduction (the try/catch structurally
+cannot see it; the watchdog resolves it to a complete phrase within the
+window and it stays correct, though the loop itself does not resume cycling
+in this specific failure class — an honest trade-off, not a gap: "never
+permanently incomplete" is satisfied, "always still animating" was never
+promised for a failure this literally external to the page's own code).
+Also re-verified: normal cycling, tab hide/show, hero scroll out/in, resize
+across breakpoints, reduced motion — all unchanged.
+
+**`js/indexJS.js` only. Uncommitted at time of writing**, per this session's
+scope (implementation happened in a follow-up turn after the audit; the audit
+itself was diagnostic-only, no files touched).
+
+### 2. The final `#contact` section's new slogan, and the bug it uncovered
+
+Requested: replace the section's heading and "24 hours" copy with three new
+lines — "One Machine. One Man." / "Claim Your Territory." / "Unleash Your
+Potential." — inside the existing dark/glass container, with clear hierarchy
+between the eyebrow and the two-line headline.
+
+**First attempt was wrong**, per direct correction: it removed
+`.contactCaption` (the section's existing dark/glass chip) entirely and put
+the new heading straight over the machine photo. Two problems followed
+directly from that: the eyebrow had no backdrop and read with poor contrast
+against a busy image, and — because the new heading was given its own
+`data-animate="clipReveal"`, matching what the *old* heading had used — it
+exposed a pre-existing bug that had apparently never been noticed.
+
+**The bug: `.contactHeading` never revealed. Confirmed pre-existing.** Before
+concluding anything about the new markup, reverted to the original,
+untouched heading via `git stash` and tested that too — identical failure.
+Instrumented the shared `IntersectionObserver` in `initializeAnimationEngine`
+to log every entry touching this specific element: it fires exactly once, at
+page load, correctly reporting `isIntersecting: false` (genuinely off-screen
+at that time), and **never fires again** — confirmed both with a
+`scrollIntoView()` jump and with a realistic incremental `page.mouse.wheel()`
+scroll over several seconds, ruling out a headless-jump-specific artifact. An
+immediately adjacent sibling using `fadeUp` reveals normally under the exact
+same observer. `clipReveal` turned out to be the *only* usage of that
+animate-type anywhere on the site (`grep -c` → 1), which is itself a data
+point: an animation type with a single, rarely-exercised call site is exactly
+where a bug like this survives unnoticed.
+
+**Fix, once corrected to keep the container:** `.contactCaption` restored in
+`index.html`, now wrapping all three new lines — `.sectionKicker` "One
+Machine. One Man." above a two-line `.contactHeading` ("Claim Your
+Territory." / "Unleash Your Potential.", split via a new
+`.contactHeadingLine { display: block; }` rule, the same pattern
+`.estimateHeadingLine` already uses for the modal heading). **The heading no
+longer carries `data-animate` at all** — removing the broken `clipReveal`
+attribute was the actual fix, not a workaround bolted beside it. It's now
+plain content that appears the instant its parent's own (separately
+confirmed-working) `fadeUp` reveal fires. Root cause of why `clipReveal`
+itself doesn't work was not chased further — `technicalDebt.md` item 58 has
+the full instrumentation trail and a warning against reusing it as-is.
+
+**Verified 22/22** at 1440px and 390px with real incremental scroll: heading
+and kicker nested inside the container, heading `opacity: 1` /
+`clip-path: none` after scrolling to it (not stuck), container's own reveal
+fires with a dark glass background behind the text, CTA button text/href and
+the machine image unchanged, zero console errors both widths. Screenshots
+confirm strong readable contrast at both sizes.
+
+**`index.html` + `css/styleIndex.css` only. Uncommitted at time of writing.**
+
+### Files Modified (this session, not yet committed)
+
+- `js/indexJS.js` — the typing-animation failsafe (§1)
+- `index.html`, `css/styleIndex.css` — the `#contact` section copy + the
+  `clipReveal` fix (§2)
+
+### Validation Performed
+
+- Lighthouse, live production, mobile + desktop, full category set (§1)
+- Fault-injection reproduction of the original freeze, live production (§1)
+- 21/21 targeted failsafe tests: normal cycling, tab hide/show, hero
+  scroll out/in, resize, reduced motion, internal-exception fault,
+  external-stall fault (§1)
+- `IntersectionObserver` instrumentation proving the `clipReveal` failure,
+  on both the original and the corrected markup (§2)
+- 22/22 targeted contact-section tests at 1440px/390px with real incremental
+  scroll (§2)
+- `node --check js/indexJS.js` — OK
+- `node _qa/runAll.js` — **90/90** (56 video + 34 sitewide regression), run
+  fresh at the end of the session
+
+### Lessons Learned
+
+- **An animation type used exactly once is a bug waiting to be found.**
+  `clipReveal` had one call site on the entire site and was silently broken
+  the whole time. If something is rare enough that nobody has looked at it
+  recently, "it must be fine, nothing changed" is not evidence.
+- **A promise that's never rejected is not the same as code that never
+  fails.** The first pass at the typing-animation fix looked complete and
+  failed its own test, because an exception inside a raw
+  `requestAnimationFrame` callback doesn't propagate as a rejection on its
+  own — it just orphans the promise. Testing the actual failure mode, not just
+  the code path, caught this before it shipped.
+- **Two failure classes need two mechanisms, and conflating them is a false
+  economy.** A single `try/catch` cannot see a callback that never runs at
+  all; a single watchdog can't distinguish "genuinely paused" from "actually
+  stuck" without also tracking pause state. Building both, scoped narrowly,
+  cost less than debugging one mechanism trying to do both jobs.
+- **When a correction arrives, re-derive from the original, not from your own
+  attempt.** Testing the *original* untouched heading (via `git stash`) before
+  concluding the reveal bug was pre-existing is what kept this from being
+  mis-filed as a regression in the copy change.
+
+---
+
 ## 2026-08-28 — LAUNCH DAY: PUSHED TO NETLIFY, THEN FIXED THE CONVERSION GAP IT EXPOSED
 
 Two things happened. `e380746` — "Prepare BlueGrid production launch", 50 files,
